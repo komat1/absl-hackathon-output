@@ -139,6 +139,17 @@ Try this sequence:
 | `make seed` cannot find a CSV | step 1 did not run — the files must be in `data/` |
 | Empty dashboard, no deals in the sidebar | `make seed` has not run against this database |
 
+### Design — not freely distributable
+
+The visual design of this app — the design system in
+[web/src/styles.css](web/src/styles.css), the UI primitives in
+[web/src/components/ui/](web/src/components/ui/), the layout, the logos and fonts
+in [web/public/](web/public/) and the icon set — is used by
+[repup.sk](https://repup.sk) and is **not freely distributable**. It is published
+here only so the hackathon project can be run and judged. Do not copy, reuse or
+redistribute the design, in whole or in part, in other projects without written
+permission.
+
 ### Icons
 
 The UI uses Font Awesome Pro *Sharp Regular* glyphs. Only the glyphs the app

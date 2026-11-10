@@ -40,7 +40,7 @@ Ports used: **5434** (PostgreSQL), **8000** (API), **5173** (web). Free them fir
 **1. Clone and get the data.** The repo does not carry the CSVs:
 
 ```bash
-git clone https://github.com/komat1/at-t_hackathron.git && cd at-t_hackathron
+git clone https://github.com/komat1/absl.git && cd absl
 ```
 
 ```bash

@@ -1,0 +1,85 @@
+/*
+ * PANEL V PRAVOM STĹPCI RÁMU (ui/DockPanel.tsx)
+ *
+ * Ten istý tvar ako AI bublina na počítači a chat v paneli (memberchat/
+ * chatDock.css): tretia zaoblená plocha vedľa karty obsahu, 8 px od okrajov
+ * rámu, zaoblenie 14 px, šírka 26,5 rem. Hlavička je TMAVÁ (tokeny rámu,
+ * `.theme-frame`), pod ňou karta `--raise` — tá istá, akú má okno (Modal),
+ * takže obsah vyzerá rovnako, nech sa otvorí kdekoľvek. Hlavička však NESMIE
+ * mať farbu rámu (`--rail`): stĺpec stojí priamo na ráme, takže by s ním
+ * splynula a panel by vyzeral, akoby začínal až pod nadpisom a krížikom. Vo
+ * svetlej téme je preto o stupeň svetlejšia než rám, v tmavej má farbu karty
+ * pod ňou (tmavá karta od sivého rámu odskočí sama). Keď sa meníš tu, pozri aj
+ * chatDock.css a `.ai-bubble` v styles.css.
+ *
+ * Mimo vrstiev zámerne, ako chatDock.css a modalWindow.css.
+ */
+
+.dock-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(26.5rem, calc(100vw - 6rem));
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--raise);
+}
+.dock-panel[data-placement="dock"] {
+  position: relative;
+  flex: 1 1 auto;
+  margin: 0 .5rem .5rem 0;
+}
+/* Okno sa zúžilo pod šírku, na ktorej sa panel vedľa karty zmestí: leží nad
+   pravou časťou karty, takže dostane tieň (je NAD niečím), ako chat. */
+.dock-panel[data-placement="overlay"] {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  right: .5rem;
+  bottom: .5rem;
+  box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / .55), 0 .25rem 1rem rgb(0 0 0 / .25);
+}
+:root.light .dock-panel[data-placement="overlay"] {
+  box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / .2), 0 .25rem 1rem rgb(0 0 0 / .08);
+}
+
+.dock-panel-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 8px 0 18px;
+  /* Tokeny rámu: vo svetlej téme tmavá plocha o stupeň nad rámom. */
+  background: var(--raise);
+}
+:root:not(.light) .dock-panel-head { background: transparent; }
+/* Ikony v hlavičke bez podkladu (vo svetlej téme by mal farbu hlavičky, v
+   tmavej by trčal ako krabička) — podklad len pri hoveri. */
+.dock-panel-head .icon-button { background: transparent; }
+.dock-panel-head .icon-button:hover { background: var(--raise-2); }
+.dock-panel-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.dock-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dock-panel:not([data-instant]) { animation: dock-panel-in .26s cubic-bezier(0.16, 1, 0.3, 1); }
+}
+@keyframes dock-panel-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}

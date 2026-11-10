@@ -1,0 +1,4810 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Outfit — app UI font, single variable file covering the whole weight axis
+   so Tailwind's font-* classes resolve (light 300 / normal 400 / medium 500 / semibold 600 / bold 700). */
+@font-face {
+  font-family: "Outfit";
+  src: url("/fonts/Outfit.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Legacy app tokens kept for pages that have not been migrated yet. */
+  --color-brand: var(--brand);
+  --color-ink: var(--foreground);
+  --color-panel: var(--card);
+  --color-line: var(--border);
+  --color-good: var(--green);
+  --color-warn: var(--amber);
+  --color-bad: var(--red);
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Every 1px border utility — `border`, `border-t`, `divide-y` — draws the
+     design system's ONE hairline, so they all read the device-pixel-snapped
+     width instead of a literal 1px. See --hairline below and lib/hairline.ts.
+     Utilities that name a width (border-0/2/4, border-l-[3px]) are untouched. */
+  --default-border-width: var(--hairline);
+}
+
+/* A hairline drawn as an ELEMENT rather than as a border — `<div class="h-px">`
+   separators, the shadcn Separator's data-orientation variants — is the same
+   line and antialiases the same way, so it reads the same width. Tailwind
+   appends these declarations to its own `h-px`/`w-px`, which keeps every
+   variant (sm:, before:, data-*) working. */
+@utility h-px { height: var(--hairline); }
+@utility w-px { width: var(--hairline); }
+/* Štítková pilulka (odznak, tag, počítadlo) — viď `--r-pill` v :root. */
+@utility rounded-pill { border-radius: var(--r-pill); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FITKO · FLAT DARK SYSTEM — Coinbase-inspired single-surface layout
+   Flat fills. No gradients, no shadows. Sections split by hairlines + space,
+   not boxed cards. One accent: brand red.
+   ════════════════════════════════════════════════════════════════════════════ */
+/* `.theme-frame` = RÁM na počítači (lišta oblastí, horná lišta, riadok záložiek
+   stránky), na ktorom ležia karty panela stránok a obsahu. Vo svetlej téme je
+   v OPAČNEJ téme (tmavý — dostáva tieto tmavé tokeny, tento blok), v tmavej je
+   TMAVOSIVÝ: tie isté tmavé tokeny s vlastným rebríčkom plôch o pár stupňov
+   vyššie (blok „Rám v tmavej téme" za svetlou témou), aby čierne karty od neho
+   odskočili. Tak sa v ňom všetko (Tailwind, shadcn mapovania, vlastné recepty)
+   prepočíta bez druhej kópie palety. Doplnky (farba textu, značka fitka,
+   výnimky) sú hneď za svetlou témou. */
+:root,
+.theme-frame {
+  --radius: 0.875rem;
+
+  /* Brand */
+  --brand:        #c42329;
+  --brand-500:    #e23b42;
+  --brand-400:    #f15a60;
+  --brand-bg:     #241316;
+  /* Brand red as TEXT / ICON on the current surface. The ramp is tuned for dark
+     backgrounds, where 400 reads; on white it washes out, so light mode drops
+     back to the full-strength brand. */
+  --brand-ink:    var(--brand-400);
+
+  /* Surface ladder — page → raised → hover */
+  --bg:           #0c0c0e;
+  --raise:        #1a1a1e;   /* tiles, chips, buttons, list-row hover-fill */
+  --raise-2:      #25252b;   /* hover of an already-raised control */
+  /* A panel nested INSIDE a --raise card (analyst blocks, callouts in a card).
+     --raise-2 is a *hover* fill; used as a resting surface it reads as a slab
+     (and in light mode it is the same gray as --well, so its hover did nothing). */
+  --nest:         #141418;
+  --nest-hover:   #202026;
+  --well:         #1f1f25;   /* input fill — distinctly elevated from --bg */
+  --field-sunk:   #141418;  /* fill for a field sunk into a --raise card/modal (dark: just below --raise, not pure page-black) */
+  /* The surface of a CHOSEN option (.pick, see @layer components). Deliberately
+     its own token rather than another rung: the picked tile has to out-read both
+     the idle fill AND the hover fill wherever it sits, and in light mode the
+     raised rungs run out of contrast before that is true. Neutral, never red —
+     red is the accent AND the danger colour, so a red-washed card said "error"
+     as loudly as it said "chosen". */
+  --pick:         #2e2e36;
+
+  /* The surface of a FLOATING panel (.menu-pop — dropdowns, the notifications
+     bell, overflow menus, toasts). Its own token because a popover is the only
+     thing that genuinely LEAVES the page, so the ladder cannot separate it —
+     and because it borrowed `--raise-2` for years, which is a HOVER fill and
+     inverts between themes: in dark it sits above `--raise`, in light below it,
+     so the same declaration made a lifted panel in one theme and a gray slab in
+     the other. That is what put a `--line` border on six panels in light while
+     two others removed theirs on purpose. */
+  --pop:          #25252b;
+  /* Hover of a row INSIDE that panel. It steps AWAY from the panel, toward the
+     page, in BOTH themes — not because hover-lightens is wrong, but because in
+     dark `--pop` already sits at the ceiling: one step lighter drops `--text-4`
+     to 3,87:1, under the 4,5:1 every surface in this file is required to hold.
+     Downward keeps the worst text at 5,02:1 and still moves 4,4 L*. */
+  --pop-hover:    #1c1c21;
+  /* Plocha PANELA WIDGETOV (widgets/WidgetTray.tsx). Nie `--pop`: panel nesie
+     dlaždice `--raise` a tie musia od neho odskočiť tak, ako odskakujú karty od
+     stránky — preto je o kúsok nad `--bg`, nie nad `--raise`. Tieň `.menu-pop`
+     ho oddeľuje od obsahu pod ním, výplň oddeľuje dlaždice od neho. */
+  --tray:         #111114;
+  /* Výplň, ktorú si berie riadok pod myšou — ZÁMERNE kontextová. Na stránke je
+     to bežný krok rebríčka nahor (`--raise`, presne to, čo recept `.row-hover`
+     robil vždy), vnútri vyskakovacieho panelu je to hover TOHO panelu. Bez toho
+     rozlíšenia riadok v paneli mieri na plochu, ktorou už panel SÁM JE — a to
+     nie je slabý hover, to je žiadny hover: `.menu-pop` mal výplň `--raise-2`
+     a položky zvončeka hoverovali tiež na `--raise-2`, čiže sa nedialo nič,
+     a to v OBOCH témach. `.row-hover` (66 miest v 36 súboroch) preto číta tento
+     token a je správny na stránke aj v paneli bez toho, aby o tom volajúci vedel.
+     Jeden token, nie dva: `SearchResultsList` je dôkaz, že to inak nejde —
+     ten istý komponent sa kreslí v rozbaľovacom paneli AJ v celoobrazovkovom
+     mobilnom hľadaní, takže sa nedá napevno rozhodnúť pri písaní. */
+  --row-hover:    var(--raise);
+
+  /* Aliases for legacy components that still reference older names */
+  --card-surface: var(--raise);
+  --chip:         var(--raise);
+  --chip-2:       var(--raise-2);
+
+  /* The ONLY hairline */
+  --line:         rgba(255,255,255,.07);
+  /* …and its WIDTH, which is not a constant. A literal 1px is a whole device
+     pixel at 100 % and at Retina 2×, but on a fractionally scaled display
+     (Windows at 125 % → 1,25 device px) the renderer antialiases it across two
+     pixels at partial coverage: the line comes out fainter, and how much
+     fainter depends on where the element lands, so two hairlines in one card
+     end up different weights. lib/hairline.ts overwrites this on <html> with
+     the largest whole device pixel that fits, expressed back in CSS pixels
+     (0.8px at 125 %), which lands on an exact boundary with nothing to
+     antialias. The 1px here is the pre-script fallback. */
+  --hairline:     1px;
+
+  /* Text — štyri stupne a KAŽDÝ z nich unesie text.
+     Tie stupne boli dlho odstupňované OKOM, nie kontrastom, a spodné dva pod
+     tým spadli: `--text-3` malo 4,22:1 na `--bg` a `--text-4` 2,60:1, čo je pod
+     hranicou aj pre NETEXTOVÉ prvky. Nie je to teoretická chyba — na tých
+     tokenoch visí čas príchodu člena (11px) a jeho ČÍSLO KARTY (10px), teda
+     presne ten reťazec, ktorý recepčná číta nahlas, aby človeka identifikovala.
+     Dnes sú prepočítané: každý stupeň drží ≥ 4,5:1 na každom povrchu, na akom
+     text naozaj leží (`--bg`, `--raise`, `--raise-2`, `--well`, `--field-sunk`,
+     `--nest` a všetkých päť stavových podkladov). `--pick` v tom zozname nie je,
+     lebo vybraná dlaždica si nadpis aj popis dvíha na `--text` / `--text-2`
+     (viď `.pick-hint` nižšie) — na `--pick` sa spodné dva stupne nedostanú.
+     Rozdiel medzi stupňami tým klesol, ale poradie ostalo čitateľné; „tiché
+     dáta" (§1.7) nesie odteraz VEĽKOSŤ a HRÚBKA, nie nečitateľnosť.
+     Zoslabnutie zakázaného ovládača ostáva na `:disabled` + `opacity`, kde bolo
+     vždy — WCAG ho z požiadavky vyníma, `--text-4` nie. */
+  --text:   #f4f4f5;
+  --text-2: #b0b0b8;
+  --text-3: #9a9aa2;
+  --text-4: #8b8b93;
+
+  /* Ikona v menu — vlastná dvojica mimo textovej škály, lebo odpovedá na inú
+     otázku: nie „dá sa to prečítať", ale „ktorý jeden riadok z pätnástich je
+     môj". Preto ide na KRAJNÉ hodnoty (čisto biela / čisto čierna proti
+     najtichšiemu sivému), čo textová škála zámerne nerobí — jej stupne musia
+     ostať čitateľné VŠETKY naraz. Bezpečné je to preto, že ikona nie je jediný
+     nosič: vybratý riadok má aj výplň `--pick`, tučnejší popis a `aria-current`,
+     takže sa tu smie ísť pod hranicu, ktorú si drží text. */
+  --nav-icon:    #6f6f78;
+  --nav-icon-on: #ffffff;
+
+  /* Status — flat low-chroma bg + bright fg */
+  --green:    #3ddc8a;  --green-bg: #15281f;
+  --amber:    #f4b740;  --amber-bg: #2a2114;
+  --blue:     #5fa8fb;  --blue-bg:  #13202f;
+  --red:      #f87171;  --red-bg:   #2a1717;
+  --teal:     #2fd0c0;  --teal-bg:  #10282a;
+
+  /* Ovládanie priestorov (RelayGlyph) — farba patrí VECI za výstupom: sauna
+     horí, klimatizácia chladí. Svieti len kým vec beží, vypnutá je sivá. */
+  --device-cold:  #6cb4ff;
+  --device-air:   #3fd0cc;
+  --device-heat:  #ff8f45;
+  --device-fire:  #ff6b3d;
+  --device-sun:   #ffbf3a;
+  --device-light: #ffd966;
+  --device-sound: #b48cff;
+
+  /* ── Grafy ──────────────────────────────────────────────────────────────
+     Kategoriálna paleta má PEVNÉ PORADIE a farba patrí VECI, nie jej poradiu
+     v rebríčku: keď filter niektorú sériu vyhodí, zvyšné si svoju farbu držia.
+     Osem odtieňov je strop — deviata séria sa skladá do „Ostatné“, nikdy sa
+     nedopočíta nová farba. Kroky nie sú odhadnuté: sedia v pásme svetlosti
+     pre tmavý režim (OKLCH L 0.48–0.67, C ≥ 0.10) a poradie je to, ktoré
+     maximalizuje najhoršiu susednú dvojicu pri simulovanej protanopii aj
+     deuteranopii (ΔE 13.9 v OKLab×100 pri prahu 8) — takže sériu vedľa série
+     rozozná aj farbosleposť. Pri zmene ktoréhokoľvek kroku sa to musí prepočítať,
+     nie odhadnúť.
+     STAVOVÉ farby (--green/--amber/--red) do tejto sady NEPATRIA a nesmú sa
+     použiť ako „ďalšia séria“: znamenajú dobre/zle a graf, kde raz zelená značí
+     hotovosť a inokedy zisk, klame. Opačne to platí tiež — séria, ktorá NAOZAJ
+     hovorí dobre/zle (rozdiel v pokladni, odchodovosť), nosí stavové farby. */
+  --chart-1: #e86059;   /* značková červená — hlavná séria */
+  --chart-2: #3794f6;   /* modrá */
+  --chart-3: #00ae67;   /* zelená */
+  --chart-4: #ab73e4;   /* fialová */
+  --chart-5: #6ea518;   /* limetková */
+  --chart-6: #db5fa1;   /* ružová */
+  --chart-7: #bf8608;   /* jantárová */
+  --chart-8: #04a3be;   /* tyrkysová */
+  /* „Neuvedené / ostatné“ — zámerne bez odtieňa, aby nevyzeralo ako séria. */
+  --chart-muted:  #6f6f79;
+  /* Sekvenčný rebrík (mapa špičiek, kohorty) — JEDEN odtieň, monotónna
+     svetlosť, krok ΔL ≥ 0.06. Nikdy dúha: pri viacfarebnom rebríku sa nedá
+     povedať, ktorý koniec je „viac“. --chart-seq-0 je prázdna bunka. */
+  --chart-seq-0:  #202026;
+  --chart-seq-1:  #9b0f18;
+  --chart-seq-2:  #b12c2c;
+  --chart-seq-3:  #c8433e;
+  --chart-seq-4:  #df5851;
+  --chart-seq-5:  #f66d64;
+  /* Atrament NA kroku rebríka. Text vo výplni je jediné miesto, kde farbu textu
+     určuje plocha pod ním a nie textový token — a preto sa nedá vybrať „raz
+     a navždy“: rebrík ide v tmavom režime zdola nahor a vo svetlom naopak,
+     takže biela, ktorá na kroku 1 drží 8,5:1, má na kroku 5 už 2,9:1. Každá
+     dvojica je overená na 4,5:1 (bežný text, nie nadpis). */
+  --chart-seq-1-ink: #ffffff;
+  --chart-seq-2-ink: #ffffff;
+  --chart-seq-3-ink: #ffffff;
+  --chart-seq-4-ink: #2a0b0d;
+  --chart-seq-5-ink: #2a0b0d;
+  /* Mriežka a osi — o krok od plochy, plná vlasová linka. Nikdy prerušovaná:
+     čiarkovanie sa číta ako prahová hodnota alebo predpoveď, nie ako mriežka. */
+  --chart-grid:   rgba(255,255,255,.07);
+  /* Medzera medzi dotýkajúcimi sa značkami (segmenty stohu, susedné stĺpce) —
+     oddeľuje ich PLOCHA, nie obrys nakreslený okolo nich. */
+  --chart-gap:    var(--raise);
+
+  /* Mappings to shadcn / Tailwind variable names */
+  --background:           var(--bg);
+  --foreground:           var(--text);
+  --card:                 var(--raise);
+  --card-foreground:      var(--text);
+  --popover:              var(--raise);
+  --popover-foreground:   var(--text);
+  --primary:              var(--brand);
+  --primary-foreground:   #ffffff;
+  --secondary:            var(--raise);
+  --secondary-foreground: var(--text);
+  --muted:                var(--raise);
+  --muted-foreground:     var(--text-2);
+  --accent:               var(--raise-2);
+  --accent-foreground:    var(--text);
+  --destructive:          var(--red);
+  --border:               var(--line);
+  --input:                transparent;
+  --ring:                 var(--brand-500);
+  /* Chart palette — defined below under „Grafy“; the shadcn --color-chart-*
+     aliases at the top of this file point at these same slots. */
+
+  /* — Radii —
+     Päť stupňov a nič medzi nimi. `--r-xs` nie je nový nápad: 10px sa v paneli
+     používalo dvadsaťkrát ako polomer malých ovládačov (ikonové tlačidlá,
+     drobné chipy) a bol to teda nezdokumentovaný piaty stupeň — buď sa pomenuje,
+     alebo sa dvadsať ovládačov prekreslí na 12px. Pomenovanie je lacnejšie
+     a pravdivejšie.
+     Komponenty ich čítajú cez `rounded-[var(--r-*)]`, nie ako číslo: kým boli
+     všade literály, bolo v štyroch obrazovkách deväť rôznych polomerov proti
+     štyrom tokenom a zmena mierky by znamenala hľadať po súboroch.
+     `--r-pill` je najtesnejší stupeň a patrí ŠTÍTKOVÝM pilulkám — odznakom
+     stavu, tagom, počítadlám, štítkom na karte — teda tomu, čo sa ČÍTA a nie
+     stláča. Tie boli dlho celkom guľaté (999px) a vedľa 14px tlačidiel sa
+     čítali ako ovládače. OVLÁDAČE v tvare pilulky (záložky `.tabs-pill-*`,
+     segmentové prepínače, filter chipy, chipové tlačidlá, plávajúce lišty)
+     ostávajú celkom guľaté — guľatosť je tam znak „dá sa stlačiť" — a KRUH
+     (avatar, bodka, ikonové tlačidlo, lišta priebehu, prepínač) token nečíta
+     nikdy. V TSX sa štítok píše utilitou `rounded-pill`, ovládač ostáva
+     `rounded-full`. */
+  --r-tile:    20px;
+  --r-card:    20px;
+  --r-md:      14px;
+  --r-sm:      12px;
+  --r-xs:      10px;
+  --r-pill:    8px;
+
+  /* — Form controls — */
+  --control-height: 2.75rem;          /* 44 */
+  --control-radius: 14px;
+  --control-padding-x: 1rem;
+  --control-font-size: 0.875rem;
+  --control-font-weight: 500;
+  --control-border-width: 0;
+
+  /* — Buttons — */
+  --button-height: 2.5rem;            /* 40 */
+  --button-radius: 14px;              /* less-rounded (matches Panel + controls), not a pill */
+  --button-padding-x: 1.125rem;
+  --button-font-size: 0.84rem;
+  --button-font-weight: 700;
+  --button-gap: 0.5rem;
+
+  /* — Icon-only buttons — */
+  --icon-button-size: 2.625rem;       /* 42 — v2: calmer chrome */
+
+  /* — Surfaces — */
+  --panel-radius: 20px;
+  --panel-padding: 1.5rem;
+  --panel-shadow: none;
+  --panel-shadow-hover: none;
+
+  /* — Motion — */
+  --transition-base: 170ms cubic-bezier(.2,.7,.3,1);
+  --press-scale: 0.98;
+
+  /* Sidebar shares the page bg; a --line hairline border-r separates it from content */
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--raise);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand-500);
+
+  /* Tell the UA to render native controls (select option lists, date/time
+     pickers, autofill fills, spinners, scrollbars) in their dark variant. */
+  color-scheme: dark;
+}
+
+.dark {
+  --background:           var(--bg);
+  --foreground:           var(--text);
+  --card:                 var(--raise);
+  --card-foreground:      var(--text);
+  --popover:              var(--raise);
+  --popover-foreground:   var(--text);
+  --primary:              var(--brand);
+  --primary-foreground:   #ffffff;
+  --secondary:            var(--raise);
+  --secondary-foreground: var(--text);
+  --muted:                var(--raise);
+  --muted-foreground:     var(--text-2);
+  --accent:               var(--raise-2);
+  --accent-foreground:    var(--text);
+  --destructive:          var(--red);
+  --border:               var(--line);
+  --input:                transparent;
+  --ring:                 var(--brand-500);
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--text);
+  --sidebar-accent: var(--raise);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LIGHT THEME — the same flat system inverted. We override only the BASE tokens
+   (surface ladder, hairline, text ramp, status fills, brand wash); every
+   shadcn/Tailwind mapping below is a `var(--bg)`-style reference, so it
+   re-resolves automatically. Toggled via the topbar sun/moon (uiStore.theme).
+   ════════════════════════════════════════════════════════════════════════════ */
+:root.light {
+  /* Active-row / brand wash — a soft red tint instead of the dark one */
+  --brand-bg:     #fbeaea;
+  /* Brand red as text/icon: on white the 400 washes out — use the full brand. */
+  --brand-ink:    var(--brand);
+
+  /* Surface ladder — page → raised → hover (inverted: page is the darkest) */
+  --bg:           #f4f4f6;   /* page */
+  --raise:        #ffffff;   /* tiles, chips, buttons, list-row hover-fill */
+  --raise-2:      #e9e9ee;   /* hover of an already-raised control */
+  /* Nested panel inside a white card — a whisper below it, not the heavy
+     --raise-2 gray, which on white reads as a slab pasted onto the card. */
+  --nest:         #f5f5f7;
+  --nest-hover:   #ececf0;
+  /* Input fill — a mid gray, distinct from BOTH white (--raise, cards/modals)
+     AND the page bg (--bg, #f4f4f6). At #f4f4f6 the well matched the page exactly,
+     so fields sitting directly on the page (topbar/Dashboard search) had no visible
+     fill. This gray reads on white cards/modals AND on the page bg.
+
+     A potom sa zrazil s `--raise-2`: obe boli #e9e9ee, takže dva stupne rebríčka
+     s ROZDIELNYM významom („hover už vyvýšeného ovládača" a „výplň poľa") boli na
+     pixel rovnaké. Prejavovalo sa to dvakrát a zakaždým to niekto obišiel namiesto
+     opravy: riadok pod myšou vyzeral ako otvorený člen (preto Zákazníci a
+     Permanentky siahli po `--pick`), a hover sekundárneho tlačidla sa nedal odlíšiť
+     od poľa vedľa neho.
+
+     Rozdeliť sa dal len TENTO stupeň a len SMEROM HORE, a rozhodol o tom výpočet,
+     nie oko: posunúť `--raise-2` nadol potrebuje na viditeľný odstup až #e5e5eb,
+     kde `--text-4` padne na 4,40:1 — pod hranicu, ktorú si škála textu drží (§2),
+     a zároveň by sa o polovicu zrezal odstup od `--pick`. #efeff3 naopak nechá
+     `--raise-2` aj `--pick` NEDOTKNUTÉ, drží `--text-4` na 4,81:1 a dvíha odstup
+     hover↔vybraté. Cena je jediná a je vedomá: pole ležiace priamo na stránke je
+     o kúsok svetlejšie než predtým (ΔL 0,088 → 0,040). Tam, kde polia naozaj sedia
+     — na bielej karte a v modáli — je odstup 0,135, teda výrazne silnejší. */
+  --well:         #efeff3;
+  /* In light mode the gray well already stands out on a white card, so a field
+     sunk into a card/modal keeps the well fill instead of lightening to --bg. */
+  --field-sunk:   var(--well);
+  /* Picked surface — in light the ladder climbs toward white, so "chosen" has to
+     step DOWN past --raise-2 to stay louder than hover. */
+  --pick:         #dcdce3;
+
+  /* Floating panel — the TOP of the light ladder, i.e. the same white as a card.
+     `--raise-2` here is #e9e9ee, one weak step from the page (#f4f4f6), which is
+     why six panels had to draw a border to own a top edge. White plus the contact
+     shadow below reads on the page AND on a white card, so none of them needs one.
+     NOTE: `--raise-2` and `--well` are deliberately the SAME value in light. The
+     light ladder is only 12,1 L* wide (`--pick` 87,9 → `--raise` 100) and already
+     carries six tokens, so a fifth distinct gray would land ~2 L* from its
+     neighbours — a step nobody can see, which is worse than an honest alias.
+     They never co-occur: `--raise-2` is a hover, `--well` is an input fill. */
+  --pop:          #ffffff;
+  --pop-hover:    #ececf0;
+  /* Panel widgetov: o krok TMAVŠÍ než stránka, nie svetlejší — biele dlaždice
+     naň musia odskočiť a svetlý tieň `.menu-pop` je na paneli tejto veľkosti
+     takmer neviditeľný. Pri #ececf0 bol od `--bg` na ΔL* 2,7 a nad stránkou
+     splýval; #e3e3e9 je 5,8 a `--text-3` na ňom drží 5,26:1. Tmavšie nie:
+     pod ~#e3e3e9 padá `--text-3` k hranici a panel sa začne čítať ako `--pick`. */
+  --tray:         #e3e3e9;
+
+  /* The ONLY hairline */
+  --line:         rgba(0,0,0,.10);
+
+  /* Text — tá istá prepočítaná škála ako v tmavom režime, len opačným smerom;
+     v svetlom padali spodné dva rovnako (4,40:1 a 2,33:1 na `--bg`). */
+  --text:   #18181b;
+  --text-2: #4a4a53;
+  --text-3: #5b5b64;
+  --text-4: #686871;
+
+  /* Ikona v menu — tá istá krajná dvojica opačným smerom (viď tmavý režim). */
+  --nav-icon:    #7c7c85;
+  --nav-icon-on: #000000;
+
+  /* Status — light low-chroma bg + saturated fg */
+  --green:    #15803d;  --green-bg: #e6f5ec;
+  --amber:    #b45309;  --amber-bg: #fbf0db;
+  --blue:     #1d4ed8;  --blue-bg:  #e6edfb;
+  --red:      #dc2626;  --red-bg:   #fbe9e9;
+  --teal:     #0d6f68;  --teal-bg:  #e0f2f0;
+
+  --device-cold:  #1466c7;
+  --device-air:   #0a7d79;
+  --device-heat:  #c2560c;
+  --device-fire:  #c93d14;
+  --device-sun:   #a36500;
+  --device-light: #9c6c00;
+  --device-sound: #7040c4;
+
+  /* Grafy — tie isté rodiny odtieňov, vlastné kroky pre biely podklad
+     (OKLCH L 0.43–0.77, C ≥ 0.10; najhoršia susedná dvojica ΔE 12.3 pri
+     protanopii/deuteranopii). Poradie sa medzi režimami NEMENÍ — inak by tá
+     istá séria zmenila farbu prepnutím témy. */
+  --chart-1: #c53634;
+  --chart-2: #0071d1;
+  --chart-3: #05874f;
+  --chart-4: #8b4ec4;
+  --chart-5: #548100;
+  --chart-6: #b93780;
+  --chart-7: #966802;
+  --chart-8: #0389a0;
+  --chart-muted:  #8e8e98;
+  /* Sekvenčný rebrík ide na bielom opačne — svetlý koniec je „málo“. */
+  --chart-seq-0:  #ededf1;
+  --chart-seq-1:  #fd736a;
+  --chart-seq-2:  #e45d56;
+  --chart-seq-3:  #cb4641;
+  --chart-seq-4:  #b32e2d;
+  --chart-seq-5:  #9b0f18;
+  --chart-seq-1-ink: #2a0b0d;
+  --chart-seq-2-ink: #2a0b0d;
+  --chart-seq-3-ink: #ffffff;
+  --chart-seq-4-ink: #ffffff;
+  --chart-seq-5-ink: #ffffff;
+  --chart-grid:   rgba(0,0,0,.08);
+  --chart-gap:    var(--raise);
+
+  color-scheme: light;
+}
+
+/* RÁM V TMAVEJ TÉME — tmavosivý, nie svetlý. Svetlý rám okolo čiernych kariet
+   bol najjasnejšia plocha na obrazovke a ťahal oko z obsahu na okraj; sivý drží
+   odskok kariet (čierna `--bg` panela na ňom, ΔL* ~13) bez oslnenia. Rám dedí
+   tmavé tokeny (blok `:root, .theme-frame`) a prepisuje len rebríček plôch, celý
+   o pár stupňov vyššie — ovládač na ráme (hover v lište, pole hľadania, ponuka)
+   musí odskočiť od RÁMU, nie od čiernej stránky —, a spodok škály textu a ikon,
+   ktorý na svetlejšej ploche klesol pod hranicu (`--text-4` 5,0:1, ikona 4,0:1). */
+:root:not(.light) .theme-frame {
+  --bg:         #27272c;   /* = --rail */
+  --raise:      #323238;
+  --raise-2:    #3c3c43;
+  --nest:       #2c2c32;
+  --nest-hover: #36363c;
+  --well:       #34343a;
+  --field-sunk: #1f1f24;
+  --pick:       #46464e;
+  --pop:        #303036;
+  --pop-hover:  #3a3a41;
+  --tray:       #222227;
+  --line:       rgba(255,255,255,.08);
+  --text-4:     #95959d;
+  --nav-icon:   #85858e;
+}
+
+/* RÁM — podklad, na ktorom ležia karty panela a obsahu (`md:bg` mriežky Shellu,
+   prstenec bodky v lište). Vo svetlej téme takmer čierna (o stupeň tmavšia než
+   tmavá stránka), v tmavej tmavosivá — tá istá ako `--bg` rámu vyššie.
+   Vybratá oblasť v lište je ZÁLOŽKA farby panela, ktorá doň vpravo plynule
+   prechádza, preto `--rail-pick` a jej ikona stoja LEN na koreni: `var(--bg)`
+   sa tak vyhodnotí z plochy panela a `.theme-frame` ho zdedí hotový. */
+:root {
+  --rail:          #27272c;
+  --rail-pick:     var(--bg);
+  --rail-pick-ink: #ffffff;
+  /* Záložka tlačidla widgetov má farbu panela widgetov, ktorý leží v tele
+     stránky (portál) — preto tu, aby ju rám zdedil hotovú, nie svoju `--tray`. */
+  --rail-tray:     var(--tray);
+}
+:root.light {
+  --rail:          #050506;
+  --rail-pick-ink: #2c2c32;
+}
+
+/* Rám (viď `.theme-frame` pri `:root`). Text dedí farbu z tela stránky, takže ju
+   podstrom musí nastaviť sám. Farbu značky si fitko nastavuje inline na koreni —
+   podstrom ju DEDÍ, inak by ju jeho tokeny vrátili na červenú RepUp. Hover
+   položky v lište je krok rebríčka TEJ témy, v ktorej rám práve je. Výnimky
+   nižšie (označenie, rolovacia lišta, tieň ponuky) sú zrkadlá tých na koreni. */
+.theme-frame {
+  color: var(--text);
+  --brand: inherit;
+  --brand-500: inherit;
+  --brand-400: inherit;
+  --rail-hover: var(--raise);
+}
+:root.light .theme-frame ::selection { color: inherit; }
+:root.light .theme-frame ::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 10%);
+  background-clip: padding-box;
+}
+:root.light .theme-frame ::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 18%);
+  background-clip: padding-box;
+}
+
+/* Selection + scrollbar read off white surfaces in light mode */
+:root.light ::selection {
+  color: #18181b;
+}
+:root.light ::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / 16%);
+  background-clip: padding-box;
+}
+:root.light ::-webkit-scrollbar-thumb:hover {
+  background: rgb(0 0 0 / 28%);
+  background-clip: padding-box;
+}
+
+/* Floating dropdown / menu panels (topbar search, notifications bell, …).
+   Solid surface — not a translucent glass — so the panel reads as a real
+   popover on either theme. The heavy black drop shadow softens in light mode. */
+/* Obrys tu ZÁMERNE nie je a nesmie pribudnúť na volajúcich miestach. Sedem z
+   deviatich panelov si ho kedysi pridávalo (`border border-[color:var(--line)]`
+   navrch tejto triedy), kým `OverflowMenu` a `Toaster` ho nemali — a `Toaster`
+   mal pri sebe komentár, že sa odobral zámerne ako „druhá hrana na jednu prácu".
+   Dve vedomé a opačné rozhodnutia, lebo v svetlej téme mal panel slabú hranu.
+   Koreň bol ale v tom, čím sa panel VYPĹŇAL: bral si `--raise-2`, čo je hover
+   a medzi témami sa OBRACIA — v tmavej leží nad `--raise`, v svetlej pod ním —,
+   takže tá istá deklarácia raz vyzerala ako vyzdvihnutý panel a raz ako sivá
+   doska o krok od stránky. Preto `--pop` a preto v svetlej dvojvrstvový tieň:
+   tesná vrstva dáva bielemu panelu hornú hranu nad bielou kartou. Nesie ho teda
+   výplň a tieň — presne to, na čo tieň v §1.2 dostal výnimku.
+   (`--well` vs `--raise-2` je samostatná oprava vedľa tejto, viď §2; panel sa
+   `--well` nikdy nedotýkal, takže obrysy nedržali na ňom.) */
+.menu-pop {
+  background: var(--pop);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+  /* Rows inside the panel hover against the PANEL, not against the page. */
+  --row-hover: var(--pop-hover);
+}
+/* Two layers, not one. The wide layer lifts the panel off the page; the tight
+   contact layer is what gives a WHITE panel a top edge on a WHITE card, which
+   in light is the only reason a border was ever added here. */
+:root.light .menu-pop {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 16px 40px -14px rgba(0, 0, 0, 0.22);
+}
+
+html {
+  font-family: var(--font-sans);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  /* `clip` for the same reason as on #root below: `overflow-x: hidden` forces
+     the other axis to `auto` and turns body into a scroll container that never
+     scrolls, which silently disables `position: sticky` for everything inside
+     it. html keeps its own horizontal clip, so nothing about what is visible
+     changes. */
+  overflow-x: clip;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: normal;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  /* `clip`, not `hidden`, and the difference is the whole reason this line has a
+     comment: `overflow: hidden` on ONE axis forces the other to `auto`, which
+     makes #root a SCROLL CONTAINER. It never actually scrolls (the document
+     does), so every `position: sticky` descendant resolved against a scrollport
+     that stands still and simply travelled up the page with the content — which
+     is why the public site themes' sticky headers never stuck, and what would
+     have killed the repup theme's running heads. `clip` hides exactly the same
+     horizontal overflow WITHOUT creating that scrollport; html and body still
+     carry `overflow-x: hidden`, so the visual result is identical even in a
+     browser too old to know the keyword. */
+  overflow-x: clip;
+  background: var(--background);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand-500) 30%, transparent);
+  color: #fff;
+}
+
+/* Thin, neutral scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 10%);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgb(255 255 255 / 20%); background-clip: padding-box; }
+
+button, input, select, textarea { font: inherit; }
+
+@layer components {
+
+  /* ════════════════════════════════════════════════════════════════════════
+     BUTTONS · flat, borderless, 14px radius
+     ════════════════════════════════════════════════════════════════════════ */
+  .primary-button,
+  .secondary-button,
+  .ink-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--button-gap);
+    height: var(--button-height);
+    padding-inline: var(--button-padding-x);
+    border-radius: var(--button-radius);
+    font-size: var(--button-font-size);
+    font-weight: var(--button-font-weight);
+    line-height: 1;
+    cursor: pointer;
+    border: 0;
+    transition:
+      background-color var(--transition-base),
+      color var(--transition-base),
+      filter var(--transition-base),
+      opacity var(--transition-base);
+
+    &:active:not(:disabled) { transform: scale(var(--press-scale)); }
+    &:disabled { cursor: not-allowed; opacity: 0.5; }
+  }
+
+  /* Primary — brand red */
+  .primary-button {
+    background: var(--brand);
+    color: #ffffff;
+  }
+  .primary-button:hover:not(:disabled) { filter: brightness(1.09); }
+
+  /* Danger — the same button, in the status red. One class rather than an
+     inline `rounded-md bg-destructive … font-semibold` per confirm dialog, which
+     is how the destructive button ended up at a different radius and weight from
+     the „Zrušiť" sitting next to it. */
+  .primary-button.danger,
+  .ink-button.danger {
+    background: var(--red);
+    color: #ffffff;
+  }
+  :root.light .primary-button.danger,
+  :root.light .ink-button.danger { color: #ffffff; }
+
+  /* Good — the status green. Dark ink in the dark theme (its green is light),
+     white in the light theme (its green is dark). */
+  .primary-button.good,
+  .ink-button.good {
+    background: var(--green);
+    color: #0a1a10;
+  }
+  :root.light .primary-button.good,
+  :root.light .ink-button.good { color: #ffffff; }
+
+  /* Secondary — raised surface */
+  .secondary-button {
+    background: var(--raise);
+    color: var(--text);
+  }
+  .secondary-button:hover:not(:disabled) { background: var(--raise-2); }
+
+  /* Ink — legacy alias = primary */
+  .ink-button {
+    background: var(--brand);
+    color: #ffffff;
+  }
+  .ink-button:hover:not(:disabled) { filter: brightness(1.09); }
+
+  /* Icon button — 42px, same radius family as regular buttons (v2: no pills
+     on buttons; pills stay on badges/tabs) */
+  .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--icon-button-size);
+    width: var(--icon-button-size);
+    border-radius: 12px;
+    border: 0;
+    background: var(--raise);
+    color: var(--text-2);
+    transition:
+      background-color var(--transition-base),
+      color var(--transition-base);
+  }
+  .icon-button:hover { background: var(--raise-2); color: var(--text); }
+  .icon-button:active { transform: scale(var(--press-scale)); }
+
+  /* Compact icon button (used inside dense rows) */
+  .icon-button-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem; width: 2.25rem;
+    border-radius: 12px;
+    border: 0;
+    background: var(--raise);
+    color: var(--text-2);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .icon-button-sm:hover { background: var(--raise-2); color: var(--text); }
+
+  /* Text-only action buttons */
+  .btn-link {
+    @apply text-sm font-bold underline-offset-2 hover:underline transition;
+    color: var(--text);
+  }
+  .btn-danger {
+    @apply text-sm font-bold underline-offset-2 hover:underline transition;
+    color: var(--red);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FILTER CHIP · pill with optional chevron, used in section headers
+     ════════════════════════════════════════════════════════════════════════ */
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: var(--raise);
+    border: 0;
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--transition-base);
+  }
+  .filter-chip:hover { background: var(--raise-2); }
+  .filter-chip .filter-chip-icon { color: var(--text-3); font-size: 0.95rem; }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FOCUS · jeden prstenec pre všetko, čo sa dá stlačiť
+
+     `.field` a `.pick` mali navrhnutý focus prstenec, každé ostatné tlačidlo
+     v paneli malo prehliadačový default — a ten je v tmavej téme tenká tmavá
+     linka na tmavom pozadí, teda prakticky nič. Kto ovláda pokladňu klávesnicou,
+     nevidel, kde stojí, na `.primary-button` vrátane.
+
+     Je to `:focus-visible`, nie `:focus`: prstenec po KLIKNUTÍ myšou nikto
+     nechce, prehliadač ho preto nekreslí a pri klávesnici áno.
+     Hodnota je tá istá, akú už používa `.pick` — jeden prstenec, jedna hrúbka,
+     jedna farba; a `box-shadow` namiesto `outline`, aby kopíroval polomer
+     tlačidla namiesto toho, aby okolo neho nakreslil obdĺžnik.
+     `.tabs-pill-trigger` má celý blok `!important` (prebíja shadcn), takže sa
+     mu to musí povedať tak isto — inak by ako jediné ostalo bez prstenca.
+
+     `.nav-item` a `.pager-button` sem pribudli neskôr a stoja tu — nie pri
+     svojich vlastných receptoch — práve preto, že hodnota smie žiť RAZ. Obe
+     boli dovtedy na prehliadačovom defaulte, čo pri bočnom menu znamenalo, že
+     produkt kreslil DVA prstence v dvoch farbách a ten cudzí (svetlomodrý
+     `rgb(153,200,255)`) bol na hlavnej navigácii. Pager je druhá polovica tej
+     istej diery: strany sa prechádzajú tabulátorom a nebolo vidieť nič.
+     ════════════════════════════════════════════════════════════════════════ */
+  .primary-button:focus-visible,
+  .secondary-button:focus-visible,
+  .icon-button:focus-visible,
+  .icon-button-sm:focus-visible,
+  .filter-chip:focus-visible,
+  .nav-item:focus-visible,
+  .nav-rail-item:focus-visible,
+  .pager-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+  }
+  .tabs-pill-trigger:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent) !important;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     RANGE · jazdec s viditeľnou dráhou
+     `appearance: none` zhasne natívnu dráhu AJ palec a `accent-color` sa
+     vtedy neuplatní — pozadie na samotnom <input> preto nikdy nie je tá
+     čiara, ktorú je vidieť. Dráha aj palec sa kreslia pseudoelementmi;
+     naplnená časť je gradient nad `--range-fill`, ktoré nastaví volajúci
+     (WebKit nemá `::-moz-range-progress`).
+     ════════════════════════════════════════════════════════════════════════ */
+  .range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range-slider::-webkit-slider-runnable-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--brand) var(--range-fill, 0%),
+      var(--raise-2) var(--range-fill, 0%)
+    );
+  }
+  .range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-top: -0.25rem;
+    border-radius: 999px;
+    border: 0;
+    background: var(--brand);
+  }
+  .range-slider::-moz-range-track {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--raise-2);
+  }
+  .range-slider::-moz-range-progress {
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+  .range-slider::-moz-range-thumb {
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+  .range-slider:focus-visible { outline: none; }
+  .range-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
+  }
+
+  /* Jazdec v tvare PREPÍNAČA — dnes iba stmievanie v Ovládaní priestorov.
+     Je to VLASTNÝ recept a nie podoba `.range-slider`: ten istý prvok nesie aj
+     hlasitosť pípnutia, odsadenie v e-mailovom dizajnéri a rozmery darčekovej
+     karty, a 36px pás v paneli vlastností by z drobného nastavenia spravil
+     najhlučnejšiu vec na obrazovke. Tu je to naopak správne — jazdec stojí SÁM
+     na dlaždici zariadenia vedľa tlačidiel, ktoré sa na dotykovej recepčnej
+     obrazovke ovládajú palcom, takže má rovnakú váhu ako prepínač.
+
+     **Naplnená časť je VLASTNÁ PLOCHA, nie gradient na dráhe**, a to je celý
+     dôvod tejto stavby. `input[type=range]` ponúka len dva pseudoprvky (dráha
+     a palec), takže červená sa dala nakresliť jedine farebným prechodom — a ten
+     sa láme na OSTRO. Pri 14px palci to nebolo vidieť, pri 28px bode vykukovali
+     nad ním a pod ním dva pásiky s hranou ako škára. Kreslia to preto obyčajné
+     elementy: zapustená koľajnica (`padding`), v nej zaoblená červená plocha
+     končiaca presne pod bodom, a biely bod na nej; samotný `input` leží
+     priehľadne na vrchu, takže ťahanie, klávesnica aj `aria-label` ostávajú
+     systémové a nič sa nenapodobňuje.
+
+     Dve miery to držia. `input` má **to isté vodorovné odsadenie** ako
+     koľajnica, lebo palec sa v ňom hýbe v jeho OBSAHOVOM poli — bez toho by
+     bod pod prstom o tie štyri body zaostával. A plocha aj poloha bodu sa
+     počítajú zo ZLOMKU (`--range-frac`), nie z percenta: bod sa hýbe len v páse
+     `[šírka/2, 100 % − šírka/2]`, takže plocha na presné percento by sa s ním
+     na oboch koncoch rozišla o polovicu bodu. */
+  .range-switch {
+    position: relative;
+    height: 2.25rem;
+    padding: 0.25rem;
+    border-radius: 999px;
+    background: var(--raise-2);
+  }
+  .range-switch-track { position: relative; height: 100%; }
+  .range-switch-fill,
+  .range-switch-knob {
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  /* Plocha ide cez CELÚ výšku koľajnice, teda o odsadenie VON z dráhy bodu
+     (záporné `inset`) — inak by červená bola len pásik v strede a nebolo by to
+     to, čím sa recept odvoláva na prepínač. Jej oblúky sú pritom tie isté ako
+     oblúky koľajnice (polomer je v oboch polovica výšky), takže vľavo splynie
+     s jej okrajom a nič nepretečie. Vpravo PRESAHUJE bod o to isté odsadenie,
+     aké má bod od okraja — takže okolo neho je rovnako široký červený lem
+     dookola a na maxime plocha sadne presne na pravý okraj koľajnice. */
+  .range-switch-fill {
+    inset-block: -0.25rem;
+    left: -0.25rem;
+    width: calc(2.25rem + var(--range-frac, 0) * (100% - 1.75rem));
+    background: var(--brand);
+  }
+  .range-switch-knob {
+    top: 0;
+    left: calc(var(--range-frac, 0) * (100% - 1.75rem));
+    width: 1.75rem;
+    height: 1.75rem;
+    background: #fff;
+  }
+  .range-switch-input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0 0.25rem;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .range-switch-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .range-switch-input::-moz-range-thumb {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0;
+  }
+  .range-switch-input:disabled { cursor: default; }
+  .range-switch:has(.range-switch-input:disabled) { opacity: 0.5; }
+  .range-switch-input:focus-visible { outline: none; }
+  .range-switch:has(.range-switch-input:focus-visible) {
+    outline: 2px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     EYEBROW · the small caps label above a value, a section or a column
+     ════════════════════════════════════════════════════════════════════════
+
+     Bola to najrozšírenejšia rola v paneli BEZ receptu: 573 miest, DESAŤ
+     veľkostí (10 ×308, 11 ×124, 10,5 ×54, 12 ×28, 13 ×26, 9 ×17, …), OSEM
+     hodnôt prestrkania a PÄŤ rezov. „Vyhráva CSS" sa na to nedalo použiť —
+     CSS malo desať odpovedí.
+
+     Vybraná je 10,5px, teda tá, ktorú DESIGN.md §4 hovoril celý čas; kód sa
+     zosúladil s dokumentáciou a nie naopak, lebo o veľkosti mala pravdu.
+
+     Čo sa ZMENILO, je PRESTRKANIE: z +0,12em na +0,04em. Drobné veľké písmená
+     roztiahnuté na maximum, v maximálnom reze a v najtichšej farbe naraz, sú
+     presne tá manierа, podľa ktorej sa na prvý pohľad pozná šablónový
+     „2025 SaaS dashboard" — a je to zároveň vnútorný spor: štítok, ktorý má
+     byť tichý, KRIČÍ rozostupom. Odfotené a porovnané v oboch témach na
+     skutočnom obsahu panelu; verzia bez rozostupu sa číta ako štítok, verzia
+     s ním ako ozdoba. Verzálky sa NEZRUŠILI a to je zámer: skúšaná bola aj
+     veta („Aktívne permanentky"), lenže tá si prestala pýtať pozornosť ako
+     ŠTÍTOK a začala súperiť s vlastnou hodnotou pod sebou — hierarchia sa
+     stratila. Manierou bol rozostup, nie verzálky.
+
+     Šírka tým NERASTIE, hoci písmo o pol pixela áno: 19-znakový štítok
+     ušetrí na prestrkaní ~15px a na veľkosti pridá ~2px.
+
+     Farba je `--text-4` (najtichší stupeň, drží 4,5:1 na každom povrchu, na
+     ktorom leží). Kto potrebuje hlasnejší alebo stavový štítok, dopíše farbu
+     utilitou — tá je vo vrstve `utilities`, takže recept prebije bez
+     `!important` (jantárové „ČAKÁ NA PLATBU", červené „PO SPLATNOSTI").
+     Veľkosť sa NEPREBÍJA: menší štítok než tento neexistuje. */
+  .eyebrow {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FORM CONTROLS · flat well, no border, focus ring only
+     ════════════════════════════════════════════════════════════════════════ */
+  .field {
+    display: block;
+    width: 100%;
+    height: var(--control-height);
+    padding-inline: var(--control-padding-x);
+    border-radius: var(--control-radius);
+    border: 0;
+    background: var(--well);
+    color: var(--text);
+    font-size: var(--control-font-size);
+    font-weight: var(--control-font-weight);
+    outline: none;
+    /* Clean filled well — no resting border/edge. Focus shows a brand ring only. */
+    box-shadow: none;
+    transition: background-color var(--transition-base), box-shadow var(--transition-base);
+
+    &::placeholder { color: var(--text-3); font-weight: 500; }
+    /* `background-color`, nie `background`: skratka by zmazala aj šípku
+       rozbaľovacieho poľa (`select.field` ju kreslí ako background-image). */
+    &:hover {
+      background-color: color-mix(in srgb, var(--well) 92%, white 5%);
+    }
+    &:focus {
+      background-color: var(--well);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+    }
+    &:disabled { cursor: not-allowed; opacity: 0.55; }
+  }
+
+  /* Sunken well — used when a field sits INSIDE a card with --raise bg.
+     --field-sunk: dark sinks to the page bg; light keeps the gray well (which
+     already reads on a white card). */
+  .field-well {
+    background-color: var(--field-sunk);
+  }
+  .field-well:hover { background-color: var(--field-sunk); }
+  .field-well:focus { background-color: var(--field-sunk); }
+
+  /* Zamaskované pole, ktoré NIE JE `type="password"`. Prehliadač ponúkne
+     „Uložiť heslo?" pre každé heslové pole, ktoré sa vyplní a potom zmizne z
+     DOM — v super admine teda pri každom zatvorenom dialógu, a pri zakladaní
+     fitka by si do NÁŠHO profilu uložil heslo cudzieho majiteľa. Hodnotu preto
+     maskuje vykresľovanie a správca hesiel žiadny prihlasovací údaj nevidí.
+     Používaj vždy spolu s `autoComplete="off"` a bez atribútu `name`. */
+  .field-secret {
+    -webkit-text-security: disc;
+  }
+
+  /* Fields inside a modal sit on the modal's --raise surface, where the plain
+     --well fill can be hard to tell apart. Use --field-sunk so they read clearly
+     in both themes (dark: page bg; light: the gray well on a white modal). */
+  /* Len farba — skratka `background` tu roky mazala šípku každého
+     rozbaľovacieho poľa v okne, takže výber vyzeral ako textové pole. */
+  .modal-portal .field {
+    background-color: var(--field-sunk);
+  }
+  .modal-portal .field:hover { background-color: var(--field-sunk); }
+  .modal-portal .field:focus { background-color: var(--field-sunk); }
+
+  /* Segmented OTP input (ui/OtpInput) — blinking caret in the active empty well */
+  .otp-caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.375rem;
+    border-radius: 1px;
+    background: var(--text);
+    animation: otp-caret 1.1s step-end infinite;
+  }
+  @keyframes otp-caret {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  /* Custom select chevron */
+  select.field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2374747c'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 16px;
+    padding-right: 2.25rem;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Form layout helpers */
+  .form-field   { @apply flex min-w-0 flex-col gap-1.5; }
+  .form-label   { color: var(--text-3); @apply text-xs font-semibold; }
+  .form-hint    { color: var(--text-3); @apply text-xs leading-4; }
+  .form-section {
+    border-radius: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SURFACES — flat. No borders. No shadows.
+     Pages compose using SECTION BANDS divided by hairlines (.section).
+     `.panel` remains for components that haven't been migrated yet.
+     ════════════════════════════════════════════════════════════════════════ */
+  .panel,
+  .metric-card {
+    border-radius: var(--panel-radius);
+    background: var(--raise);
+    border: 0;
+    box-shadow: none;
+  }
+
+  /* Soft callout — slightly darker chip inside a card */
+  .panel-soft {
+    border-radius: var(--r-md);
+    background: var(--well);
+    border: 0;
+  }
+
+  .metric-card {
+    padding: var(--panel-padding);
+    transition: background-color var(--transition-base);
+  }
+
+  /* Accent variant — exactly one per row, used rarely */
+  .metric-card.accent,
+  .panel.accent {
+    background: var(--brand);
+    color: #ffffff;
+  }
+
+  /* Page section band — used in the main column to split content with
+     hairlines + space instead of bordered cards. `padding: 26px 30px`. */
+  .section-band {
+    padding: 1.625rem 1.875rem;
+    border-bottom: var(--hairline) solid var(--line);
+  }
+  .section-band:last-child { border-bottom: 0; }
+  .section-band--tight { padding-block: 0.875rem; }
+
+  /* Section header inside a band */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .section-head h2 {
+    font-size: 1.0625rem;     /* 17 — v2: calmer, max weight 700 */
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    color: var(--text);
+  }
+  .section-head-nav { display: flex; gap: 0.5rem; }
+  .nav-arrow {
+    width: 2.25rem; height: 2.25rem;
+    border-radius: 999px;
+    background: var(--raise);
+    border: 0;
+    color: var(--text-2);
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .nav-arrow:hover { background: var(--raise-2); color: var(--text); }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     BADGES + DELTAS · flat pills on --r-pill (never a full round)
+     ════════════════════════════════════════════════════════════════════════ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .badge-green  { background: var(--green-bg); color: var(--green); }
+  .badge-red    { background: var(--red-bg);   color: var(--red);   }
+  .badge-amber  { background: var(--amber-bg); color: var(--amber); }
+  .badge-blue   { background: var(--blue-bg);  color: var(--blue);  }
+  /* Tyrkysová stojí na vlastnej dvojici tokenov ako ostatné farby pilulky —
+     kým to bola svetlofialová na `--raise`, v svetlom režime to bol bledý
+     text na bielej karte, teda pilulka, ktorú nebolo vidieť. */
+  .badge-teal   { background: var(--teal-bg);  color: var(--teal);  }
+  .badge-gray   { background: var(--raise);    color: var(--text-2); }
+  /* In light mode --raise is pure white, so a gray badge vanishes against
+     white cards — use the raised-2 gray instead so it stays a visible pill. */
+  :root.light .badge-gray { background: var(--raise-2); }
+
+  /* Delta chip — value+arrow change indicator */
+  .delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .delta svg { font-size: 15px; }
+  .delta.up   { color: var(--green); }
+  .delta.down { color: var(--red);   }
+
+  /* Count chip — neutral version of badge for header counters */
+  .count-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    padding: 2px 8px;
+    border-radius: 7px;
+    background: var(--raise);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .count-chip.alert {
+    background: var(--brand);
+    color: #ffffff;
+  }
+
+  /* Avatar — flat solid colour, white initials */
+  .avatar {
+    @apply flex shrink-0 items-center justify-center rounded-full font-bold uppercase text-white;
+    background: var(--raise);
+    letter-spacing: 0.02em;
+  }
+
+  /* Inline status dot */
+  .status-dot {
+    @apply inline-block h-2 w-2 rounded-full;
+  }
+  .status-dot.pulse { animation: fitko-pulse 1.8s ease-in-out infinite; }
+  @keyframes fitko-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  /* Toast slide-in from the right (global Toaster, top-right) */
+  .animate-toast-in { animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(18px) scale(0.98); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  /* Exit: fade + slide out using transforms only, so the card keeps its layout
+     slot for the whole animation — the cards below it stay put (the spot stays
+     empty) instead of snapping up into the gap. The slot collapses only once the
+     card is actually removed from the store, after this anim finishes. */
+  .animate-toast-out { animation: toast-out 0.24s cubic-bezier(0.4, 0, 1, 1) forwards; }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to   { opacity: 0; transform: translateX(18px) scale(0.98); }
+  }
+
+  /* Uložené/chyba pri automatizácii — hlásenie vedľa tlačidla v lište builderu.
+     Nie je to toast v rohu: prilieta z tlačidla, chvíľu stojí a samo sa stratí,
+     takže po uložení netreba nič zavierať a ruka ostáva na plátne. Dĺžka
+     animácie sa musí zmestiť do 6 s, po ktorých ho odloží AutomationBuilder. */
+  .animate-flow-flash { animation: flow-flash 6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes flow-flash {
+    0%   { opacity: 0; transform: translateX(10px) scale(0.96); }
+    4%   { opacity: 1; transform: translateX(0) scale(1); }
+    88%  { opacity: 1; transform: translateX(0) scale(1); }
+    100% { opacity: 0; transform: translateX(0) scale(0.98); }
+  }
+
+  /* Assistant panel — entrance pop (scale + slide up from the launcher corner) */
+  .animate-assistant-in {
+    animation: assistant-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes assistant-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* The Pomoc drawer's "thinking" state is NOT its own vocabulary: the
+     assistant narrates its work with the very same rail, shimmer, ping and
+     caret as the Analytik below (components/assistant/AssistantTrace.tsx reuses
+     the .analyst-* classes on purpose). One product, one idea of what "the AI is
+     working" looks like — so a change to the motion below changes both. */
+
+  /* ── Analytik (AI analyst) ──────────────────────────────────────────────
+     The answer is assembled live, so the blocks need to *arrive* rather than
+     blink into place. Everything below is opacity/transform only — no shadows,
+     no glow — and every consumer collapses it when the OS asks for reduced
+     motion (see components/analyst/motion.ts). */
+
+  /* The reading column of a conversation. One number, read by the greeting,
+     the thread and the composer, so all three sit on one axis — the moment they
+     differ, sending a question makes the page shift sideways under the reader.
+     768px is ~72 characters at 15px, which is the measure prose wants anyway. */
+  .analyst-shell { --thread-w: 768px; }
+
+  /* ── Orb ────────────────────────────────────────────────────────────────
+     The AI's one sign of life. See components/analyst/Orb.tsx for why there is
+     exactly one of these and not four. Geometry authored on a 28px stage,
+     scaled by --orb-k; the whole animation is opacity + scale on nine dots. */
+  .orb {
+    position: relative;
+    display: block;
+    flex: none;
+    overflow: hidden;
+    /* Ink of a dot between beats — the lattice stays legible while it rests.
+       Resting is the state the orb is in most of the time, including as the
+       44px mark on an empty screen, so it has to hold its own shape there. */
+    --orb-rest: 0.34;
+    /* …and of a dot sitting the run out entirely (the interior). */
+    --orb-dim: 0.15;
+    --orb-dur: 1700ms;
+    color: var(--text-3);
+  }
+  /* While it works the resting ink DROPS: the tail needs somewhere to fall to,
+     and a bright head over a bright ring is a blinking grid, not a comet. */
+  .orb[data-state="working"] { color: var(--brand-500); --orb-rest: 0.2; }
+  .orb[data-state="offline"] { --orb-rest: 0.12; --orb-dim: 0.07; }
+
+  .orb-lattice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    transform-origin: 0 0;
+    /* Three 3px dots on a 6px pitch measure 15px, so the grid is offset to sit
+       centred on the 28px stage. It deliberately does not fill the stage. */
+    transform: scale(var(--orb-k, 1)) translate(6.5px, 6.5px);
+  }
+  .orb-cell {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: var(--orb-rest);
+  }
+  .orb-cell[data-still] { opacity: var(--orb-dim); }
+
+  .orb[data-state="working"] .orb-cell:not([data-still]) {
+    animation: orb-comet var(--orb-dur) cubic-bezier(0.22, 1, 0.36, 1) infinite both;
+  }
+
+  /* Starts lit and decays, so the staggered ring cells form a head and a tail.
+     The decay spans ~3.5 of the 8 ring positions — enough to read as a comet.
+     Linear on the way down on purpose: an eased fall collapses the tail into
+     the two cells behind the head instead of spreading it into a gradient. */
+  @keyframes orb-comet {
+    0% {
+      opacity: 1;
+      transform: scale(1.2);
+      animation-timing-function: linear;
+    }
+    45% {
+      opacity: var(--orb-rest);
+      transform: scale(1);
+    }
+    100% {
+      opacity: var(--orb-rest);
+      transform: scale(1);
+    }
+  }
+
+  /* The surface every rendered block sits on. On the radius ladder (18px was
+     a sixth step nothing else in the panel used), and roomier than it was: a
+     block is a SECTION of the answer, and a section needs the space around its
+     heading that the old 16px padding never gave it. */
+  .analyst-card {
+    border-radius: var(--r-tile);
+    background: var(--raise);
+    padding: 16px;
+  }
+  @media (min-width: 640px) {
+    .analyst-card { padding: 20px 22px; }
+  }
+
+  /* A grid whose cells are separated by the one hairline instead of by gaps —
+     KPI tiles, key/value pairs. Reads as one instrument panel rather than as a
+     handful of floating boxes.
+
+     The line is drawn by each CELL rather than by the container's fill showing
+     through 1px gaps: with a partial last row — 3 tiles in 4 columns — the gap
+     trick exposed the container as an empty gray slab where the 4th tile was
+     missing. Now a missing cell is simply card surface.
+
+     The 1px sits past the cell's LEADING edges (top + left), never the trailing
+     ones: a cell is painted after the ones before it in DOM order, so a leading
+     line lands on top of the neighbour already painted, while a trailing one
+     would be covered by the neighbour painted next. The grid's own overflow
+     clips the outermost lines against the rounded corners. */
+  .analyst-grid {
+    display: grid;
+    overflow: hidden;
+    border-radius: var(--r-md);
+    background: var(--raise);
+  }
+  .analyst-grid > * {
+    background: var(--raise);
+    box-shadow: calc(-1 * var(--hairline)) 0 0 0 var(--line), 0 calc(-1 * var(--hairline)) 0 0 var(--line);
+  }
+
+  /* Long tables keep their header line visible while the rows scroll under it. */
+  .analyst-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--raise);
+  }
+
+  /* A block landing in the thread as it streams in. */
+  .animate-block-in { animation: analyst-block-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes analyst-block-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* The user's question, pushed in from the right. */
+  .animate-ask-in { animation: analyst-ask-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes analyst-ask-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Live step marker: a dot with one ring expanding out of it. */
+  .analyst-ping {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--brand-500);
+    animation: analyst-ping 1.7s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes analyst-ping {
+    0%        { opacity: 0.5; transform: scale(1); }
+    70%, 100% { opacity: 0;   transform: scale(2.6); }
+  }
+
+  /* A sentence of the answer arriving — softer than a block, because prose
+     lands mid-thought and shouldn't jump the text that's already there. */
+  .animate-part-in { animation: analyst-part-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes analyst-part-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Text that is still being worked on: light sweeps across the letters. One
+     hue, no colour ramp — it reads as "alive", not as a gradient. */
+  .analyst-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      var(--text-4) 26%,
+      var(--text) 42%,
+      var(--text) 50%,
+      var(--text-4) 66%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: analyst-shimmer 2.4s linear infinite;
+  }
+  @keyframes analyst-shimmer {
+    from { background-position: 180% 0; }
+    to   { background-position: -80% 0; }
+  }
+
+  /* The icon on a running trace — a slow breath, never a spinner. */
+  .analyst-think { animation: analyst-think 2.4s ease-in-out infinite; }
+  @keyframes analyst-think {
+    0%, 100% { opacity: 0.45; transform: scale(0.94); }
+    50%      { opacity: 1;    transform: scale(1); }
+  }
+
+  /* The caret at the end of the sentence being written. */
+  .analyst-caret {
+    display: inline-block;
+    width: 2px;
+    height: 0.95em;
+    margin-left: 2px;
+    vertical-align: -0.12em;
+    background: var(--brand-500);
+    animation: analyst-caret 1.05s steps(1) infinite;
+  }
+  @keyframes analyst-caret {
+    0%, 55%   { opacity: 1; }
+    56%, 100% { opacity: 0; }
+  }
+
+  /* Collapse without measuring heights: the row goes 1fr → 0fr. */
+  .analyst-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .analyst-collapse > * { overflow: hidden; }
+  .analyst-collapse[data-open="true"] { grid-template-rows: 1fr; }
+
+  /* Steps of a trace, dealt out one after another instead of all at once. */
+  .analyst-step { animation: analyst-part-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .analyst-step { animation-delay: calc(var(--i, 0) * 55ms); }
+  /* The step still running: a thin specular brand-red streak travels round the chip's
+     edge, like light sliding over a polished rim (React Bits „Specular
+     Button“, done in CSS instead of a WebGL canvas per chip). A conic gradient
+     with two opposite highlights — the edge facing the light and the one
+     facing away — is masked down to a 1px ring and its angle rotates.
+     Finished chips stay on the quiet --raise with no edge at all. */
+  .analyst-step-running {
+    position: relative;
+    background-color: var(--raise-2);
+  }
+  .analyst-step-running::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--spec-angle),
+      transparent 0deg,
+      color-mix(in srgb, var(--brand-500) 25%, transparent) 14deg,
+      var(--brand-400) 34deg,
+      color-mix(in srgb, var(--brand-500) 25%, transparent) 54deg,
+      transparent 72deg,
+      transparent 180deg,
+      color-mix(in srgb, var(--brand) 12%, transparent) 194deg,
+      color-mix(in srgb, var(--brand-500) 60%, transparent) 214deg,
+      color-mix(in srgb, var(--brand) 12%, transparent) 234deg,
+      transparent 252deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    animation: analyst-spec 2.6s linear infinite;
+  }
+  @keyframes analyst-spec {
+    from { --spec-angle: 0deg; }
+    to   { --spec-angle: 360deg; }
+  }
+
+  /* The line between two steps draws itself downward. */
+  .analyst-rail { transform-origin: top; animation: analyst-rail 0.3s ease-out both; }
+  @keyframes analyst-rail {
+    from { transform: scaleY(0); }
+    to   { transform: scaleY(1); }
+  }
+
+  /* Hover lift for prompt cards / tiles — transform only, never a shadow. */
+  .analyst-lift {
+    transition: background-color var(--transition-base), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .analyst-lift:hover:not(:disabled) { transform: translateY(-2px); }
+  .analyst-lift:active:not(:disabled) { transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-block-in,
+    .animate-ask-in,
+    .animate-part-in,
+    .analyst-step,
+    .analyst-rail,
+    .analyst-think,
+    .analyst-caret,
+    .analyst-ping { animation: none; }
+    .analyst-step-running::before { animation: none; }
+    /* The orb freezes into its lattice: the shape still identifies the AI,
+       it just stops travelling. */
+    .orb-cell { animation: none !important; }
+    .analyst-shimmer {
+      animation: none;
+      background: none;
+      -webkit-text-fill-color: currentColor;
+      color: var(--text-2);
+    }
+    .analyst-collapse { transition: none; }
+    .analyst-lift:hover:not(:disabled) { transform: none; }
+    .setting-flash { animation-duration: 0.01s; background-color: transparent; }
+  }
+
+  /* One setting, deep-linked (?setting=<key>, see lib/settingHighlight.ts).
+     The row is scrolled to and briefly tinted so the eye lands on it — no
+     border, no glow, just the brand wash fading out of the surface. */
+  .setting-flash {
+    animation: setting-flash 2.2s ease-out both;
+    border-radius: var(--r-md);
+  }
+  @keyframes setting-flash {
+    0%   { background-color: var(--brand-bg); }
+    70%  { background-color: var(--brand-bg); }
+    100% { background-color: transparent; }
+  }
+
+  /* List row — separation by hover-fill, not dividers */
+  .row-hover {
+    border-radius: var(--r-md);
+    transition: background-color var(--transition-base);
+  }
+  .row-hover:hover { background: var(--row-hover); }
+
+  /* ── `.table-rows` — vlások MEDZI riadkami tabuľky ───────────────────────
+     Jediná výnimka z „bez obrysov" (§2) a platí len pre TABUĽKU. Zvislý zoznam
+     kariet delí plocha a medzera, lebo karta je jedna vec pod druhou; riadok
+     tabuľky je naopak šesť údajov vedľa seba na stopercentnej šírke panela a
+     medzi „141,92 €" a menom v susednom riadku je desať centimetrov prázdna.
+     Bez vlásku tam oko preskočí o riadok a suma sa pripíše cudziemu človeku.
+     Delí sa MEDZI riadkami, nie okolo nich: selektor je `tr + tr`, takže PRVÝ
+     riadok čiaru nemá — hlavička stĺpcov nie je údaj, od ktorého treba prvý
+     záznam oddeliť, a čiara pod ňou by zavrela zoznam do rámu. Z toho istého
+     dôvodu je vlások VRCHNÝ a nie spodný: posledný riadok tak nekončí čiarou
+     visiacou nad spodným okrajom panela.
+     Kreslí sa na BUNKE, nie na `<tr>`: obrys na riadku je pri `border-collapse`
+     vec, ktorú si každý prehliadač vykreslí po svojom. Šírku berie z
+     `--hairline` (`--default-border-width`), teda z tej istej, akou sa kreslí
+     každý iný vlások v paneli. */
+  .table-rows > tbody > tr + tr > td,
+  .table-rows > tbody > tr + tr > th {
+    border-top: var(--hairline) solid var(--line);
+  }
+
+  /* Stored signature PNGs are transparent with near-white ink (the signed PDF
+     draws them on a fixed dark panel), so on a light surface they'd be white
+     on white. Invert flips the ink to near-black and leaves alpha untouched —
+     so keep the plate on a wrapper, never on the inverted element itself. */
+  :root.light .signature-ink { filter: invert(1); }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     SIDEBAR · borderless, page-coloured, pill nav
+     ════════════════════════════════════════════════════════════════════════ */
+  .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 0.6875rem;
+    height: 42px;
+    flex-shrink: 0; /* short viewports must scroll the nav, not squash the rows */
+    padding: 0 0.75rem;
+    border-radius: 11px;
+    background: transparent;
+    border: 0;
+    color: var(--text-2);
+    font-weight: 500;
+    font-size: 0.845rem;       /* 13.5 */
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .nav-item:hover {
+    background: var(--raise);
+    color: var(--text);
+  }
+  .nav-item:hover .nav-icon { color: var(--text-2); }
+
+  /* „Kde som" a „kde je myš" boli JEDNA výplň: hover aj aktívna položka kreslili
+     `--raise`, takže vo chvíli, keď kurzor vošiel do menu, sa v ňom hlásili k
+     výberu dva riadky naraz — a v svetlej téme to bolo horšie, lebo obe boli
+     čistá biela pilulka na sivej stránke.
+     Výplň je NEUTRÁLNA, nie brandová: `--pick` je povrch VYBRANEJ veci a je to
+     vlastný stupeň práve preto, aby prebil idle AJ hover v oboch témach (v tmavej
+     stúpa nad `--raise-2`, v svetlej naopak klesá POD bielu, kde sa rebríček
+     vyčerpá). Červený wash tu bol a nezostal: pri svetlej téme klesol kontrast
+     textu na výplni na 3,9:1. (Panel je dnes vždy v červenej RepUp — farba
+     fitka sa doň neprenáša —, ale výplň ostáva neutrálna aj tak.)
+     Farbu preto nenesie ani IKONA: kreslí ju dvojica `--nav-icon` /
+     `--nav-icon-on` (§2), teda čistá biela proti tlmenej sivej v tmavom režime a
+     čistá čierna v svetlom. Rozdiel medzi „tu som" a „tu nie som" tak nesie
+     KONTRAST a nie odtieň. Značková červená tu bola (`--brand-ink`, stupeň 400) a čítala sa
+     ako vyblednutá ružová; plná `--brand` má na `--pick` 2,3:1, čo je pre 16px
+     ikonu nečitateľné. Šípka na konci vybratého riadku odišla s tým istým
+     krokom — vybratý riadok už hovorí to isté troma spôsobmi (výplň, tučný
+     popis, jasná ikona) a štvrtá značka len tlačila popis. */
+  .nav-item.active,
+  .nav-item.active:hover {
+    background: var(--pick);
+    color: var(--text);
+    font-weight: 600;
+  }
+  .nav-item .nav-icon {
+    color: var(--nav-icon);
+    font-size: 0.95rem;
+    width: 1.05rem;
+    text-align: center;
+    transition: color var(--transition-base);
+  }
+  .nav-item.active .nav-icon { color: var(--nav-icon-on); }
+
+  /* Nadpis skupiny v paneli („Nastavenie" nad Typmi termínov a Online
+     rezerváciami). VETOU, nie verzálkami s rozostupom — tie sa čítajú ako
+     šablóna a v tomto paneli nie sú nikde. Začína tam, kde ikony položiek, je
+     menší a tlmenejší než ony, aby sa nečítal ako ďalšia položka, a má väčšiu
+     medzeru NAD sebou než pod sebou: patrí k tomu, čo nasleduje. */
+  .nav-group-label {
+    flex-shrink: 0;
+    padding: 1.125rem 0.75rem 0.375rem;
+    color: var(--text-3);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+
+  /* ── LIŠTA OBLASTÍ ──
+     Samé ikony, bez popisov: meno oblasti nesie NADPIS PANELU hneď vedľa, takže
+     vybratá oblasť je pomenovaná vždy, a ostatné sa pýtajú `title`.
+     Terč je 36 px a rozostup 44 px — chip je menší než miesto, ktoré má okolo
+     seba, takže lišta ostáva vzdušná a nečíta sa ako druhé menu súperiace s
+     panelom. Je to kompromis: panel beží aj na DOTYKOVEJ obrazovke recepcie,
+     kde sa mieri prstom, takže sa nedá ísť na tesných 32 px. */
+  .nav-rail-item {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0; /* krátke okno má rolovať lištu, nie stláčať oblasti */
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--nav-icon);
+    cursor: pointer;
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .nav-rail-item:hover {
+    background: var(--rail-hover);
+    color: var(--text-2);
+  }
+  /* Vybratá oblasť je ZÁLOŽKA: zľava zaoblená, vpravo vo farbe plochy panela
+     (`--rail-pick` = `--bg`) dobehne až k jej okraju a napojí sa naň dvomi
+     vydutými oblúčikmi hore a dole. Záložku kreslia dva tiene o 5 px doprava (po
+     okraj plochy — lišta je len taká široká, ako treba, aby obsahu ostalo
+     miesto) aj doľava (záložka začína 4 px od okraja obrazovky), takže terč aj
+     ikona ostávajú na mieste a ikona má v záložke ROVNAKÝ odstup z oboch strán;
+     oblúčiky sú `::before`/`::after`. Lišta má 50 px a jej obsah je odsadený
+     o 4 px zľava (stred 27 px, rovnako logo) — terč 36 px stojí 9 px od ľavého
+     okraja a predĺženie siaha presne po pravý. Na výšku je záložka
+     DLHŠIA než terč (44 px), no zápornými okrajmi zaberá v stĺpci stále 36 px,
+     takže sa ostatné ikony nepohnú. Musí prebiť idle AJ hover, inak sa pri
+     prejdení myšou hlásia k výberu dve oblasti naraz. */
+  .nav-rail-item.active,
+  .nav-rail-item.active:hover {
+    background: var(--rail-pick);
+    color: var(--rail-pick-ink);
+    height: 44px;
+    margin-block: -4px;
+    z-index: 1;
+    border-radius: 12px 0 0 12px;
+    box-shadow: 5px 0 0 var(--rail-pick), -5px 0 0 var(--rail-pick);
+  }
+  .nav-rail-item.active::before,
+  .nav-rail-item.active::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+  }
+  .nav-rail-item.active::before {
+    top: -8px;
+    background: radial-gradient(circle at 0 0, transparent 7.5px, var(--rail-pick) 8px);
+  }
+  .nav-rail-item.active::after {
+    bottom: -8px;
+    background: radial-gradient(circle at 0 100%, transparent 7.5px, var(--rail-pick) 8px);
+  }
+  .nav-rail-item.active .nav-rail-dot { box-shadow: 0 0 0 2px var(--rail-pick); }
+  /* Tlačidlo panela widgetov je tiež ZÁLOŽKA, ale napája sa na PANEL WIDGETOV,
+     nie na kartu obsahu: tá pod lištou už končí a spodný oblúčik visel pod jej
+     zaobleným rohom. Panel preto pristane ľavým okrajom na okraji lišty a
+     spodkom na spodku záložky (WidgetTrayLauncher.tsx ho tam odmeria), záložka
+     má jeho farbu (`--rail-tray`) a s panelom ju spája len horný vydutý
+     oblúčik — spodok záložky a spodok panela sú jedna hrana, takže dolný
+     oblúčik nie je a panel má ľavý dolný roh rovný. */
+  .nav-rail-toggle.is-open,
+  .nav-rail-toggle.is-open:hover {
+    background: var(--rail-tray);
+    color: var(--rail-pick-ink);
+    height: 44px;
+    margin-block: -4px;
+    z-index: 1;
+    border-radius: 12px 0 0 12px;
+    box-shadow: 5px 0 0 var(--rail-tray), -5px 0 0 var(--rail-tray);
+  }
+  .nav-rail-toggle.is-open::before {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: -8px;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    background: radial-gradient(circle at 0 0, transparent 7.5px, var(--rail-tray) 8px);
+  }
+  .nav-rail-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+  /* Vybratá záložka je kus PANELA, nie rámu, takže ikonu nesie atrament panela
+     (`--rail-pick-ink` z koreňa), nie `--nav-icon-on` rámu — ten je v opačnej
+     téme a na záložke by zmizol. */
+  .nav-rail-item.active .nav-rail-icon { color: var(--rail-pick-ink); }
+
+  /* Lišta oblastí v Shell.tsx: záložku nekreslí vybraté tlačidlo, ale JEDEN
+     prvok `.nav-rail-pick` (ui/RailPick.tsx), ktorý sa medzi oblasťami
+     presúva. Tvar je ten istý ako vyššie, len rozpísaný do jedného boxu: 46 px
+     (terč + 5 px na oboch stranách), 44 px na výšku, zľava zaoblený, vpravo
+     rovný a s vydutými oblúčikmi k ploche panela. Tlačidlá ležia nad ním.
+     Ikona oblasti, ku ktorej záložka práve letí, prejde do atramentu záložky
+     až s malým oneskorením — vo svetlej téme je ten atrament tmavý a na
+     čiernom ráme by na okamih zmizla, kým k nej záložka dorazí. */
+  .nav-rail-sliding .nav-rail-item { z-index: 1; }
+  .nav-rail-sliding .nav-rail-item.active,
+  .nav-rail-sliding .nav-rail-item.active:hover {
+    background: transparent;
+    height: 36px;
+    margin-block: 0;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .nav-rail-sliding .nav-rail-item.active::before,
+  .nav-rail-sliding .nav-rail-item.active::after { content: none; }
+  .nav-rail-sliding .nav-rail-icon { transition: color 160ms ease; }
+  .nav-rail-sliding .nav-rail-item.active .nav-rail-icon { transition: color 200ms ease 90ms; }
+  .nav-rail-pick {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 46px;
+    height: 44px;
+    border-radius: 12px 0 0 12px;
+    background: var(--rail-pick);
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease;
+    will-change: transform;
+  }
+  .nav-rail-pick::before,
+  .nav-rail-pick::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 8px;
+    height: 8px;
+  }
+  .nav-rail-pick::before {
+    top: -8px;
+    background: radial-gradient(circle at 0 0, transparent 7.5px, var(--rail-pick) 8px);
+  }
+  .nav-rail-pick::after {
+    bottom: -8px;
+    background: radial-gradient(circle at 0 100%, transparent 7.5px, var(--rail-pick) 8px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-rail-pick { transition: opacity 160ms ease; }
+  }
+  /* Vybratá ikona je PLNÁ, keď plná verzia existuje (lib/sharpSolidIcons.ts), a v
+     tej istej veľkosti ako obrys — zmenšená skákala pri každom prepnutí.
+     Vo svetlej téme z nej čistá čierna `--nav-icon-on` robila čierny blok. Výber
+     tu nesie tvar aj výplň, preto stačí tmavosivá — v lište aj v paneli. */
+  :root.light .nav-panel .nav-item.active .nav-icon { color: #2c2c32; }
+  /* Čakajúca práca v oblasti, ktorá práve nie je otvorená. Bodka, nie číslo:
+     počet aj tak vypíše panel o kus vedľa a na terči by bol nečitateľný.
+     Prstenec farbou pozadia ju odlepí od ikony pod ňou. */
+  .nav-rail-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--brand);
+    box-shadow: 0 0 0 2px var(--rail);
+  }
+
+  /* ── PANEL OBLASTI ──
+     Riadok nesie ikonu aj text. `.nav-item` je spoločné s lištou super admina —
+     mení sa tu len výška, stupeň písma a polomer, aby panel uniesol aj oblasť
+     so siedmimi stránkami bez rolovania. */
+  .nav-panel .nav-item {
+    height: 36px;
+    font-size: 0.8125rem;      /* 13 */
+    border-radius: 9px;
+    gap: 0.625rem;
+  }
+  .nav-panel .nav-item + .nav-item { margin-top: 2px; }
+  /* Ikony panelu o stupeň väčšie než v spoločnom `.nav-item` (lišta super admina
+     ostáva, ako bola). */
+  .nav-panel .nav-icon { font-size: 1.0625rem; width: 1.25rem; }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     PILL TABS · the canonical intra-page view switcher, rendered by
+     components/ui/PillTabs.tsx (customer detail, page-level tabs, filters).
+     Near-white active pill on a raised track.
+     ════════════════════════════════════════════════════════════════════════ */
+  .tabs-pill-list {
+    background: var(--raise) !important;
+    border-radius: 999px !important;
+    padding: 5px !important;
+    height: 48px !important;
+    width: fit-content !important;
+    display: inline-flex !important;
+    gap: 4px !important;
+  }
+  .tabs-pill-trigger {
+    position: relative !important;
+    border-radius: 999px !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    color: var(--text-2) !important;
+    background: transparent !important;
+    border: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    transition: background-color var(--transition-base), color var(--transition-base) !important;
+  }
+  .tabs-pill-trigger:hover { color: var(--text) !important; }
+  .tabs-pill-trigger[data-state="active"] {
+    background: var(--text) !important;
+    color: var(--bg) !important;
+  }
+  /* Kill shadcn's bottom underline pseudo-element under the active tab */
+  .tabs-pill-trigger::after { display: none !important; }
+  /* PillTabs `fill` — dráha cez celú šírku, záložky rovnakým dielom. Musí žiť
+     v TEJ ISTEJ vrstve ako `width: fit-content !important` vyššie: pri
+     !important vyhráva skoršia vrstva, takže utilita z `@layer utilities` by
+     ho neprebila nikdy. */
+  .tabs-pill-list.tabs-pill-fill { width: 100% !important; }
+  /* Bez `fill` dráha roluje do strany (PillTabs: overflow-x-auto), takže sa
+     pilulka nesmie zúžiť — inak sa „Zľavové kódy" na telefóne zalomia na dva
+     riadky namiesto toho, aby sa dráha dala posunúť. */
+  .tabs-pill-list:not(.tabs-pill-fill) .tabs-pill-trigger {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  .tabs-pill-fill .tabs-pill-trigger {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    padding: 0 10px !important;
+  }
+  /* Count badge inside a pill — inverts on the near-white active pill so it
+     stays readable on both states. */
+  .tabs-pill-trigger .pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: var(--r-pill);
+    background: var(--raise-2);
+    color: var(--text-2);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .tabs-pill-trigger[data-state="active"] .pill-count {
+    background: color-mix(in srgb, var(--bg) 14%, transparent);
+    color: var(--bg);
+  }
+  /* Stavový počet (PillTab.countTone): „Po termíne 2" červeno, „Dnes 1"
+     jantárovo. Len na NEVYBRATEJ pilulke — na vybratej (atrament na --text)
+     by stavová farba na inverznom podklade bola nečitateľná a výber už
+     hovorí, na čo sa človek pozerá. */
+  .tabs-pill-trigger[data-state="inactive"] .pill-count[data-tone="red"] {
+    background: var(--red-bg);
+    color: var(--red);
+  }
+  .tabs-pill-trigger[data-state="inactive"] .pill-count[data-tone="amber"] {
+    background: var(--amber-bg);
+    color: var(--amber);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     PICK · the ONE way the panel says "this one is chosen"
+     (rendered by components/ui/Pick.tsx — PickTile / PickChip / PickRow)
+
+     It used to be a red wash + a red ring, and that was wrong twice over: red
+     is the single accent (so a form with four options painted four of them red
+     and the eye had nothing left to land on) and red is ALSO the danger colour
+     (so „Súkromná akcia" chosen looked like „Súkromná akcia" rejected).
+
+     The cue is now INK — the same near-white-on-dark / near-black-on-light
+     inversion the active pill tab already uses, so the product has one idea of
+     "selected" at every scale:
+       · card-sized choice  → neutral picked surface + a small ink check mark
+       · compact choice     → the ink becomes the whole fill, like a pill tab
+     State is read off aria-pressed / aria-checked / data-picked, so a call site
+     writes the attribute it owes a screen reader anyway and gets the visual
+     free — no conditional className strings, no drift between the two.
+     ════════════════════════════════════════════════════════════════════════ */
+  .pick,
+  .pick-chip {
+    position: relative;
+    border: 0;
+    border-radius: var(--r-md);
+    background: var(--nest);
+    color: var(--text-2);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color var(--transition-base),
+      color var(--transition-base);
+  }
+  .pick:hover:not(:disabled),
+  .pick-chip:hover:not(:disabled) { background: var(--nest-hover); color: var(--text); }
+  .pick:active:not(:disabled),
+  .pick-chip:active:not(:disabled) { transform: scale(var(--press-scale)); }
+  .pick:disabled,
+  .pick-chip:disabled { cursor: not-allowed; opacity: 0.45; }
+  .pick:focus-visible,
+  .pick-chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+  }
+
+  /* Chosen — card scale. Surface steps to --pick; the mark below carries the ink. */
+  .pick[aria-pressed="true"],
+  .pick[aria-checked="true"],
+  .pick[data-picked="true"] {
+    background: var(--pick);
+    color: var(--text);
+  }
+
+  /* Chosen — compact scale. No room for a mark, so the ink IS the fill. */
+  .pick-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--r-sm);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .pick-chip[aria-pressed="true"],
+  .pick-chip[aria-checked="true"],
+  .pick-chip[data-picked="true"] {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .pick-chip[aria-pressed="true"]:hover:not(:disabled),
+  .pick-chip[aria-checked="true"]:hover:not(:disabled),
+  .pick-chip[data-picked="true"]:hover:not(:disabled) {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  /* The mark. Absent from the DOM flow (absolute) so adding it never reflows a
+     tile, and it SCALES IN rather than appearing — picking is an act, and the
+     mark landing is the panel acknowledging it. */
+  .pick-mark {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
+    display: grid;
+    place-items: center;
+    height: 1.125rem;
+    width: 1.125rem;
+    border-radius: 999px;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 0.625rem;
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+    transition:
+      opacity 130ms ease,
+      transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pick[aria-pressed="true"] > .pick-mark,
+  .pick[aria-checked="true"] > .pick-mark,
+  .pick[data-picked="true"] > .pick-mark { opacity: 1; transform: scale(1); }
+
+  /* The tile's leading glyph rides the same ramp as its text — idle it is
+     metadata, chosen it is content. Keeps the icon from needing its own
+     conditional colour at every call site. */
+  .pick .pick-icon { color: var(--text-3); transition: color var(--transition-base); }
+  .pick:hover:not(:disabled) .pick-icon { color: var(--text-2); }
+  .pick[aria-pressed="true"] .pick-icon,
+  .pick[aria-checked="true"] .pick-icon,
+  .pick[data-picked="true"] .pick-icon { color: var(--text); }
+
+  /* The plate variant — a larger glyph above the label, for the roomier tiles
+     that need explaining. Bez doštičky pod ikonou (ikona v rámčeku sa v RepUpe
+     nekreslí): zvolená dlaždica dvíha ikonu na plný atrament, zvyšok výberu
+     nesie plocha dlaždice a značka ✓. */
+  .pick .pick-plate {
+    color: var(--text-3);
+    transition: color var(--transition-base);
+  }
+  .pick:hover:not(:disabled) .pick-plate { color: var(--text-2); }
+  .pick[aria-pressed="true"] .pick-plate,
+  .pick[aria-checked="true"] .pick-plate,
+  .pick[data-picked="true"] .pick-plate {
+    color: var(--text);
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     ODPORÚČANÁ voľba — celá v brande. (Cenník: PRO.)
+     Dve rôzne veci a dva rôzne jazyky: „toto ti odporúčame" je BRAND (červený
+     wash + červená plotňa) a platí, kým sa človek nerozhodne; „toto si vybral"
+     je INK (fajka `.pick-mark`) a je odpoveď na klik. Keby bolo oboje červené,
+     na obrazovke by sa nedalo rozoznať odporúčanie od výberu.
+
+     Prečo recept a nie utility v JSX: `.pick[aria-checked]` prepisuje plochu aj
+     plotňu, takže trieda z komponentu by červenú prehrala presne vo chvíli, keď
+     si fitko PRO vyberie — a odporúčaný stĺpec by pri kliknutí zošedivel. Preto
+     má featured variant vlastné pravidlo aj pre zvolený stav: plocha zostáva
+     červená a zvolenosť dvíha plotňu na plný brand.
+     ════════════════════════════════════════════════════════════════════════ */
+  .pick-featured { background: var(--brand-bg); }
+  .pick-featured:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--brand-bg) 90%, var(--text) 7%);
+  }
+  .pick-featured[aria-pressed="true"],
+  .pick-featured[aria-checked="true"],
+  .pick-featured[data-picked="true"] { background: var(--brand-bg); }
+  /* Ikona odporúčanej voľby je holá ako všade inde — brand nesie jej farba,
+     zvolenosť ju dvíha z `--brand-ink` na plný `--brand`. */
+  .pick-featured .pick-plate {
+    color: var(--brand-ink);
+  }
+  .pick-featured[aria-pressed="true"] .pick-plate,
+  .pick-featured[aria-checked="true"] .pick-plate,
+  .pick-featured[data-picked="true"] .pick-plate {
+    color: var(--brand);
+  }
+
+  /* A picked tile's secondary line must not stay at --text-3, which was tuned
+     against the idle fill and goes muddy on the picked one. */
+  .pick .pick-hint { color: var(--text-3); transition: color var(--transition-base); }
+  .pick[aria-pressed="true"] .pick-hint,
+  .pick[aria-checked="true"] .pick-hint,
+  .pick[data-picked="true"] .pick-hint { color: var(--text-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pick-mark { transition: opacity 130ms ease; transform: none; }
+    .pick[aria-pressed="true"] > .pick-mark,
+    .pick[aria-checked="true"] > .pick-mark,
+    .pick[data-picked="true"] > .pick-mark { transform: none; }
+    .pick:active:not(:disabled),
+    .pick-chip:active:not(:disabled) { transform: none; }
+  }
+
+    /* ════════════════════════════════════════════════════════════════════════
+     MRIEŽKA — plochy, nie linky
+
+     Kalendár je najhustejšia obrazovka v paneli: sedem stĺpcov krát sedemnásť
+     hodín krát desiatky blokov. Keby každý z tých dielov niesol vlastnú linku,
+     vznikne mreža, v ktorej termín nie je popredie, ale ďalší štvorček. Kreslia
+     sa preto tri veci a nič viac: zvislá vlásočnica medzi dňami, vodorovná na
+     CELEJ hodine, a PLOCHA tam, kde plocha niečo znamená (dnešok, víkend,
+     otvorené hodiny).
+     ════════════════════════════════════════════════════════════════════════ */
+  /* Mriežka ROLUJE SAMA, a to je jediné, čo drží hlavičku hore.
+     `position: sticky` sa lepí na najbližší rolovací predok — a ten tu bol
+     `overflow-x: auto` samotnej mriežky (vodorovné rolovanie robí zo schránky
+     scrollport v OBOCH osiach). Keďže tá schránka je vysoká presne ako obsah,
+     nerolovala nikdy, takže sa lepiť nemalo o čo: rolovala STRÁNKA a hlavička
+     odišla s ňou. Pri stĺpcoch po dňoch to bola nepríjemnosť, pri stĺpcoch po
+     trénerovi je to koniec pohľadu — po dvoch hodinách rolovania sú z tvárí
+     bezmenné pruhy a nedá sa povedať, čí je ktorý.
+
+     Strop je preto vo výške OKNA, nie obsahu. Číslo je hlavička panelu +
+     ovládací riadok + medzery; `min-height` je poistka pre nízke okno, kde by
+     z kalendára inak ostal prúžok. */
+  .cal-grid {
+    overflow: auto;
+    max-height: calc(100dvh - 168px);
+    min-height: 360px;
+  }
+
+  .cal-head {
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Hodinová os drží ĽAVÝ okraj pri vodorovnom rolovaní — z toho istého dôvodu,
+     z akého hlavička drží horný. Osem stĺpcov trénerov sa do okna nezmestí a
+     bez času vľavo je odrolovaná mriežka pole farebných obdĺžnikov. */
+  .cal-axis {
+    position: sticky;
+    left: 0;
+    z-index: 25;
+    background: var(--bg);
+  }
+  .cal-head .cal-axis { z-index: 31; }
+
+  .cal-col { border-left: 1px solid var(--line); }
+  /* Dnešok si drží stopu farby po celej výške — inak sa pri scrollovaní na
+     večer stratí, ktorý stĺpec je dnešný, a ostane naň len čiara „teraz". */
+  .cal-col[data-today="true"] {
+    background: color-mix(in srgb, var(--brand-500) 4%, transparent);
+  }
+  /* Víkend je iný druh dňa, nie menej dôležitý deň: ustúpi o jeden stupienok
+     a nič viac, aby sa nepliedol so zatvoreným. */
+  .cal-col[data-weekend="true"] {
+    background: color-mix(in srgb, var(--text) 3%, transparent);
+  }
+
+  /* Otvorené: nadvihnutá plocha. Dvíha sa PRACOVNÝ čas, nie zatvorený —
+     svetlejší závoj sa v tmavom režime číta ako „viac", takže zašednúť
+     zatvorené znamenalo zvýrazniť práve to, kde nikto nie je. Šrafa tu nie je
+     a byť nesmie: tú si v kalendári drží ZRUŠENÝ termín a dve šrafy by boli
+     dve veci jednou kresbou. */
+  .cal-open {
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+  }
+  :root.light .cal-open {
+    background: color-mix(in srgb, var(--text) 3%, transparent);
+  }
+
+  /* BLOKÁCIA V ROZVRHU — čas sály, priestoru či trénera, ktorý sa verejne
+     nepredá. Tlmený jantárový závoj, nie šrafa (tú drží zrušený termín) a nie
+     obrys: blokácia je VAROVANIE, ktoré leží POD termínmi — termín počas nej
+     je bežná vec a musí ostať čitateľný. Štítok s dôvodom je jediné, čo sa
+     dá kliknúť (otvorí úpravu); zvyšok pásu prepúšťa klik do mriežky, lebo
+     založiť termín v zablokovanom čase smie recepcia vždy. */
+  .cal-block {
+    background: color-mix(in srgb, var(--amber) 9%, transparent);
+  }
+  :root.light .cal-block {
+    background: color-mix(in srgb, var(--amber) 8%, transparent);
+  }
+  .cal-block-label {
+    background: var(--amber-bg);
+    color: var(--amber);
+    transition: filter var(--transition-base);
+  }
+  .cal-block-label:hover { filter: brightness(1.08); }
+
+  /* Prázdny čas je TLAČIDLO (klik = nový termín), ale nesmie tak vyzerať, kým
+     naň nikto nemieri — sedemnásť hodín zvýraznených pásov je stena. */
+  .cal-slot {
+    transition: background-color var(--transition-base);
+  }
+  .cal-slot:hover {
+    background: color-mix(in srgb, var(--brand-500) 9%, transparent);
+  }
+  .cal-slot-hour { border-top: 1px solid var(--line); }
+
+  /* ROZKRESLENÝ TERMÍN — ťah cez prázdno.
+     Zámerne to NIE JE `.cal-event`: ten je tvrdenie „toto v rozvrhu stojí",
+     kým náčrt je len to, čo drží ruka, a pustením myši sa z neho stane
+     formulár, nie záznam. Preto brandová plocha bez písmena farby typu (ten
+     sa ešte nevybral) a plný obrys — ten istý jazyk, akým `[data-dragging]`
+     hovorí „toto je práve teraz v pohybe", a rovnako len na okamih. */
+  .cal-sketch {
+    background: color-mix(in srgb, var(--brand-500) 22%, transparent);
+    box-shadow: inset 0 0 0 2px var(--brand-500);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  :root.light .cal-sketch {
+    background: color-mix(in srgb, var(--brand-500) 14%, transparent);
+  }
+  .cal-sketch-label {
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* „Teraz" — čiara cez dnešný stĺpec s bodkou na začiatku. Čas k nej píše
+     štítok na osi, takže sa v mriežke neopakuje. */
+  .cal-now {
+    height: 0;
+    border-top: 2px solid var(--brand-500);
+  }
+  .cal-now::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: -4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--brand-500);
+  }
+  .cal-now-chip {
+    background: var(--brand-500);
+    color: #ffffff;
+  }
+
+  /* „+3" — zvyšok zhluku, na ktorý v týždni nie je šírka. Je to VCHOD do
+     denného pohľadu, nie termín, tak nenesie ani farbu, ani meno: keby vyzeral
+     ako pilulka, čítalo by sa to ako ďalší termín menom „+3". */
+  .cal-more {
+    display: grid;
+    place-items: center;
+    background: var(--raise);
+    color: var(--text-3);
+    transition:
+      background-color var(--transition-base),
+      color var(--transition-base);
+  }
+  .cal-more:hover {
+    background: var(--raise-2);
+    color: var(--text);
+  }
+
+  /* Dátum v hlavičke otvára ten deň. Dnešok má plochu vždy, ostatné až pod myšou. */
+  .cal-head-date { transition: background-color var(--transition-base); }
+  .cal-head-date:not([data-today]):hover { background: var(--raise-2); }
+
+/* ════════════════════════════════════════════════════════════════════════
+     TERMÍN JE PLNÁ FAREBNÁ PILULKA
+
+     Blok prešiel tromi tvarmi a stojí za to vedieť, prečo skončil tu.
+     Najprv bol jemný tint s TÓNOVANÝM textom (zelené písmo na zelenej ploche) —
+     vyzeralo to ako nálepka a meno sa na 30 px vysokom termíne nedalo prečítať
+     bez zahľadenia sa. Potom tint s NEUTRÁLNYM textom a farebným pásikom —
+     čitateľné, ale ticho: v mriežke siedmich dní sa termín nelíšil od podkladu
+     dosť na to, aby bolo VIDIEŤ, kde je rušno a kde nie, čo je prvá otázka,
+     s ktorou sa na rozvrh pozerá.
+
+     Dnes je natretý CELÝ, v plnej sýtosti, a text je na ňom biely alebo takmer
+     čierny — podľa toho, čo sa na tej farbe dá prečítať. Tú otázku rozhodne
+     `inkFor` v scheduleColour.ts z jasu farby a pošle hotovú hodnotu; CSS to
+     spraviť nevie a `color-contrast()` prehliadače nemajú. Bez toho by termín
+     v jantárovej sále mal biele písmo na žltom, čiže 1,7 : 1.
+
+     Čo z toho plynie ďalej:
+       • PÁSIK VĽAVO ZANIKOL. Bol nosičom farby, kým ju plocha nenosila; vedľa
+         plnej plochy je to druhá veta o tom istom.
+       • BLOKY POTREBUJÚ ŠKÁRU. Dva termíny na sebe (10:00 koniec / 10:00
+         začiatok) v tej istej farbe by splynuli do jedného obdĺžnika, tak si
+         každý ubere 2 px na spodku — nie linka, len medzera.
+       • ODCVIČENÉ USTÚPI DO TINTU. Hotový deň nemá byť najhlasnejší na
+         obrazovke, a keď je natretý všetko, tichšie sa dá byť už len tintom.
+     ════════════════════════════════════════════════════════════════════════ */
+  .cal-event {
+    --ev: var(--text-3);
+    /* Plochu aj písmo počíta `solidFor` v scheduleColour.ts a posiela ich sem
+       ako `--ev-solid` / `--ev-solid-ink`; fallback je holý akcent s bielou.
+       Nikdy nie `var(--ev)` na plochu aj na písmo naraz — to je blok bez písmen. */
+    --ev-fill: var(--ev-solid, var(--ev));
+    --ev-ink: var(--ev-solid-ink, #ffffff);
+    --ev-ink-2: rgba(255, 255, 255, 0.8);
+
+    position: relative;
+    /* Blok sa pýta na VLASTNÚ šírku (viď container query nižšie) — v týždni je
+       ten istý termín raz cez celý stĺpec a raz v tretine, a to nie je rozdiel,
+       ktorý by sa dal odvodiť z výšky. */
+    container-type: inline-size;
+    background: var(--ev-fill);
+    color: var(--ev-ink);
+    transition:
+      background-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  /* Pod myšou sa plocha nedvíha do svetla ani nepadá do tmy (jedno z toho by na
+     polovici palety zmizlo), ale prekryje sa vlastnou farbou textu — na
+     akomkoľvek akcente to funguje rovnako a v oboch témach správnym smerom. */
+  .cal-event::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+  }
+  .cal-event:hover::after { opacity: 0.13; }
+
+  /* Ikona railu je tá istá farba ako druhá úroveň textu — v plnej pilulke už
+     nemá čo rozlišovať farbou, rozlišuje TVAROM (postava vs. skupina). */
+  .cal-event-mark { color: var(--ev-ink-2); }
+
+  @supports (color: color-mix(in srgb, red, red)) {
+    .cal-event {
+      --ev-ink-2: color-mix(in srgb, var(--ev-ink) 78%, transparent);
+    }
+  }
+
+  .cal-event-meta { color: var(--ev-ink-2); }
+
+  /* ÚZKY BLOK STRÁCA VŠETKO OKREM MENA.
+
+     Súbežné termíny delia stĺpec, takže ten istý blok má raz 170 px a raz 70.
+     Pri 70 px zoberie čas vpravo polovicu riadku a z „Lucia Michalíková" ostane
+     „L…" — teda presne ten stav, na ktorý sa tu robilo všetko ostatné. Poradie
+     ústupu je dané tým, čo sa dá zistiť inak: ČAS povie poloha bloku v mriežke
+     a hover karta, IKONA railu povie farba a tvar susedstva, MENO nepovie nič
+     iné. Odchádza preto zľava doprava a meno ostáva do konca. */
+  @container (max-width: 118px) {
+    .cal-event-time { display: none; }
+  }
+  @container (max-width: 84px) {
+    .cal-event-kind { display: none; }
+  }
+
+  /* „Práve prebieha" nemá vlastnú kresbu na bloku: `StateMark` už kreslí
+     brandovú bodku v riadku názvu, takže prsteň okolo bol tretia veta o tom
+     istom — a zároveň presne ten obrys, ktorý sa z mriežky odstraňoval. */
+
+  /* Odcvičené ustupuje z plnej plochy do TINTU a text sa vráti na normálny
+     panelový. STOPU farby si necháva — inak by sa z hotového dňa stala šedá
+     stena, v ktorej sa nedá nájsť, ktorá hodina to bola. */
+  /* `data-muted` = kontext v mriežke na výber (okno „Rezervácia" na karte
+     člena): ustúpi tým istým receptom ako odcvičené, viď TimeGrid `isMuted`. */
+  .cal-event[data-done="true"],
+  .cal-event[data-muted="true"] {
+    --ev-fill: var(--raise);
+    --ev-ink: var(--text-2);
+    --ev-ink-2: var(--text-4);
+  }
+
+  /* Zrušené je šrafované, nie priesvitné. Priehľadnosť sa v svetlom režime
+     nedala odlíšiť od „ďaleko v budúcnosti" a na prekrytých blokoch sa navyše
+     sčítavala; šrafa je jednoznačná v oboch témach a prežije aj tlač. */
+  .cal-event[data-cancelled="true"] {
+    /* Zrušené vypadne z plnej plochy tiež: termín, ktorý sa nekoná, nemá byť
+       v mriežke rovnako hlasný ako ten, ktorý sa koná. */
+    --ev-fill: var(--raise);
+    --ev-ink: var(--text-3);
+    --ev-ink-2: var(--text-4);
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent 0 5px,
+      var(--line) 5px 6px
+    );
+  }
+
+  @supports (color: color-mix(in srgb, red, red)) {
+    .cal-event[data-done="true"],
+    .cal-event[data-muted="true"] {
+      --ev-fill: color-mix(in srgb, var(--ev) 17%, var(--bg));
+    }
+    :root.light .cal-event[data-done="true"],
+    :root.light .cal-event[data-muted="true"] {
+      --ev-fill: color-mix(in srgb, var(--ev) 19%, #ffffff);
+    }
+    .cal-event[data-cancelled="true"] {
+      --ev-fill: color-mix(in srgb, var(--ev) 13%, var(--bg));
+      background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0 5px,
+        color-mix(in srgb, var(--text) 11%, transparent) 5px 6px
+      );
+    }
+    :root.light .cal-event[data-cancelled="true"] {
+      --ev-fill: color-mix(in srgb, var(--ev) 15%, #ffffff);
+    }
+  }
+
+  /* Ťahaný blok je JEDINÝ, ktorý obrys má, a to zámerne: je to okamih, nie
+     stav. Počas ťahu treba spomedzi prekrytých blokov vidieť ten v ruke —
+     a keď sa pustí, obrys je preč. Pásik pod ním ostáva. */
+  .cal-event[data-dragging="true"] {
+    box-shadow: 0 0 0 2px var(--brand-500);
+  }
+
+
+  /* Legenda a hover karta čítajú ten istý akcent, takže bodka pri mene je
+     doslova tá istá farba ako pás na bloku. */
+  .cal-dot {
+    background: var(--ev);
+  }
+
+  /* ── Skrinka: stav nesmie byť IBA farba ───────────────────────────────────
+     Dlaždica skrinky mala tri stavy odlíšené výhradne odtieňom výplne —
+     `--green-bg` voľná, `--red-bg` obsadená, `--amber-bg` mimo prevádzky —
+     a na 28px mriežke Prehľadu sú to tri takmer rovnako tmavé štvorčeky
+     (svetlosť `#15281f` vs `#2a1717` sa líši o zlomok). WCAG 1.4.1: deuteranop
+     neprečíta widget, kvôli ktorému widget existuje, a obsadenú skrinku pridelí
+     človeku, ktorý v nej má veci.
+
+     Druhý kanál je preto ŠRAFOVANIE, nie ďalšia farba — tá istá myšlienka
+     a ten istý recept, akým `.cal-event[data-cancelled]` hovorí „toto sa
+     nekoná": textúra sa číta bez ohľadu na vnímanie farby a funguje aj na
+     28px, kde sa glyf vedľa čísla nezmestí. Uhol je ROZLIŠOVAČ, nie ozdoba:
+     obsadená 135°, mimo prevádzky 45° (zrkadlový obraz, teda odlíšiteľné aj
+     bez farby), voľná NEMÁ textúru vôbec — najčastejší a najžiadanejší stav
+     musí ostať najtichší. Neaktívna skrinka svoj druhý kanál mala vždy
+     (`line-through`).
+
+     Krok 4/5px je zvolený tak, aby na 28px dlaždici vyšlo šesť čiar; hrubší
+     raster by na nej splynul do plochy, jemnejší by zmizol pri 125 % škálovaní. */
+  .locker-tile[data-locker-state="taken"],
+  .locker-tile[data-locker-state="broken"] {
+    background-image: repeating-linear-gradient(
+      var(--locker-hatch-angle) ,
+      transparent 0 4px,
+      var(--line) 4px 5px
+    );
+  }
+  .locker-tile[data-locker-state="taken"]  { --locker-hatch-angle: 135deg; }
+  .locker-tile[data-locker-state="broken"] { --locker-hatch-angle: 45deg; }
+
+  /* Na farebnej výplni je neutrálna `--line` slabá; kde `color-mix` je, kreslí
+     sa šrafa vlastným atramentom dlaždice (t. j. stavovou farbou textu). */
+  @supports (color: color-mix(in srgb, red, blue)) {
+    .locker-tile[data-locker-state="taken"],
+    .locker-tile[data-locker-state="broken"] {
+      background-image: repeating-linear-gradient(
+        var(--locker-hatch-angle),
+        transparent 0 4px,
+        color-mix(in srgb, currentColor 34%, transparent) 4px 5px
+      );
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Dark-mode bridge for legacy screens that still use the old light-utility palette.
+   Maps Tailwind light tokens onto our surface ladder so unmigrated screens don't
+   show white-on-white. */
+.dark .bg-white,
+.dark .bg-neutral-50,
+.dark .bg-neutral-100 {
+  background-color: var(--raise) !important;
+}
+
+.dark .bg-ink {
+  background-color: var(--brand) !important;
+}
+
+.dark .bg-red-50,
+.dark .bg-red-50\/30,
+.dark .bg-red-50\/40,
+.dark .bg-rose-50,
+.dark .bg-rose-50\/30,
+.dark .bg-rose-50\/40 {
+  background-color: var(--red-bg) !important;
+}
+.dark .bg-orange-50,
+.dark .bg-amber-50,
+.dark .bg-amber-50\/30,
+.dark .bg-amber-50\/40,
+.dark .bg-yellow-50 {
+  background-color: var(--amber-bg) !important;
+}
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/30,
+.dark .bg-emerald-50\/40,
+.dark .bg-green-50,
+.dark .bg-teal-50 {
+  background-color: var(--green-bg) !important;
+}
+.dark .bg-cyan-50,
+.dark .bg-blue-50,
+.dark .bg-blue-50\/30,
+.dark .bg-blue-50\/40,
+.dark .bg-indigo-50 {
+  background-color: var(--blue-bg) !important;
+}
+.dark .bg-purple-50,
+.dark .bg-pink-50 {
+  background-color: var(--raise) !important;
+}
+
+.dark .text-ink,
+.dark .text-neutral-700,
+.dark .text-neutral-800,
+.dark .text-neutral-900 {
+  color: var(--text) !important;
+}
+
+.dark .text-brand {
+  color: var(--brand-500) !important;
+}
+
+.dark .text-neutral-300,
+.dark .text-neutral-400,
+.dark .text-neutral-500,
+.dark .text-neutral-600 {
+  color: var(--text-2) !important;
+}
+
+.dark .border-line,
+.dark .border-neutral-100,
+.dark .border-neutral-200,
+.dark .border-neutral-300 {
+  border-color: transparent !important;
+}
+
+.dark .bg-line {
+  background-color: var(--raise) !important;
+}
+
+.dark .hover\:bg-neutral-100:hover,
+.dark .hover\:bg-muted:hover {
+  background-color: var(--raise) !important;
+}
+
+.dark .hover\:bg-red-50:hover,
+.dark .hover\:bg-red-50\/30:hover,
+.dark .hover\:bg-red-50\/40:hover,
+.dark .hover\:bg-rose-50:hover,
+.dark .hover\:bg-rose-50\/30:hover,
+.dark .hover\:bg-rose-50\/40:hover,
+.dark .hover\:bg-amber-50:hover,
+.dark .hover\:bg-amber-50\/30:hover,
+.dark .hover\:bg-amber-50\/40:hover,
+.dark .hover\:bg-blue-50:hover {
+  background-color: var(--raise) !important;
+}
+
+/* Strip divider lines on unmigrated screens — separation is by gap+fill. */
+.dark .divide-line > * + *,
+.dark .divide-neutral-100 > * + *,
+.dark .divide-neutral-200 > * + * {
+  border-color: transparent !important;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Print — the Štatistiky page renders a dedicated, print-only report
+   (`.stats-print`) portaled to <body>, a direct sibling of #root. On paper we
+   simply hide #root and show the report in normal flow, so charts/toolbar/
+   sidebar never reach the page and multi-page reports paginate cleanly.
+   ─────────────────────────────────────────────────────────────────────────── */
+.stats-print {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Hide the live app entirely; the portaled report is the only thing left. */
+  body > #root {
+    display: none !important;
+  }
+
+  /* Modals portal to <body> (siblings of #root), so they survive the rule above
+     and would otherwise print their dialog chrome + buttons. Never print a modal
+     — the closure/doklad prints on the thermal printer, not the browser. */
+  .modal-portal {
+    display: none !important;
+  }
+
+  .stats-print {
+    display: block !important;
+    color: #17171c;
+    font-size: 11px;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Report header ── */
+  .stats-print__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #17171c;
+  }
+  .stats-print__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  /* Logo sa nikdy neoreže: znak je štvorec 44 px, celé (ležaté) logo má
+     výšku 40 px a strop šírky — `object-fit: cover` kedysi orezal logotyp na
+     dve stredové písmená. Rozmery nesie `--wide` / štvorec podľa tenantLockup. */
+  .stats-print__logo {
+    height: 44px;
+    width: 44px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .stats-print__logo--wide {
+    height: 40px;
+    width: auto;
+    max-width: 200px;
+    object-position: left center;
+  }
+  .stats-print__name {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .stats-print__sub {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .stats-print__title {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .stats-print__title .t {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .stats-print__title .period {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .stats-print__title .gen {
+    font-size: 9.5px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  /* ── Section titles ── */
+  /* Sections flow across pages (no break-inside:avoid) so a long table fills
+     the first page instead of jumping whole to page 2 and leaving it blank.
+     Row-level breaks are still avoided and the heading sticks to its table. */
+  .stats-print__section {
+    margin-top: 16px;
+  }
+  .stats-print__h {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #17171c;
+    margin-bottom: 7px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #d4d4d8;
+    break-after: avoid;
+  }
+
+  /* ── KPI grid ── */
+  .stats-print__kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .stats-print__kpi {
+    border: 1px solid #d4d4d8;
+    border-radius: 8px;
+    padding: 9px 11px;
+  }
+  .stats-print__kpi .k {
+    font-size: 8.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6b7280;
+  }
+  .stats-print__kpi .v {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+  }
+  .stats-print__kpi .s {
+    font-size: 9px;
+    color: #6b7280;
+    margin-top: 1px;
+  }
+
+  /* ── Tables ── */
+  .stats-print table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .stats-print thead {
+    display: table-header-group; /* repeat header on each printed page */
+  }
+  .stats-print th {
+    text-align: left;
+    font-size: 8.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    padding: 4px 6px;
+    border-bottom: 1px solid #d4d4d8;
+  }
+  .stats-print td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #ececef;
+  }
+  .stats-print tr {
+    break-inside: avoid;
+  }
+  .stats-print .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .stats-print tfoot td {
+    font-weight: 800;
+    border-top: 1.5px solid #17171c;
+    border-bottom: none;
+  }
+
+  /* Two-up grid for the smaller breakdown tables. These are short (≤8 rows),
+     so keep each two-column block whole rather than splitting mid-grid. */
+  .stats-print__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    break-inside: avoid;
+  }
+
+  .stats-print__foot {
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #d4d4d8;
+    font-size: 9px;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .stats-print__foot svg {
+    color: #6b7280; /* wordmark paints with currentColor */
+  }
+}
+
+/* ── 🥚 Easter eggs ──────────────────────────────────────────────────────────
+   Arnold slides up from the bottom edge when the dashboard search summons him;
+   the quote bubble fades in once he's standing. */
+.egg-arnold {
+  animation: egg-arnold-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.egg-arnold-quote {
+  animation: egg-arnold-quote-in 0.35s ease-out 0.4s both;
+}
+@keyframes egg-arnold-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes egg-arnold-quote-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Exit: the quote pops away first, then Arnold sinks back below the edge.
+   Duration must stay in sync with the 450ms unmount delay in Dashboard.tsx. */
+.egg-arnold--leaving .egg-arnold {
+  animation: egg-arnold-out 0.45s cubic-bezier(0.55, 0, 0.85, 0.4) both;
+}
+.egg-arnold--leaving .egg-arnold-quote {
+  animation: egg-arnold-quote-out 0.18s ease-in both;
+}
+@keyframes egg-arnold-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(105%); }
+}
+@keyframes egg-arnold-quote-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(8px); }
+}
+
+/* The speech bubble's tail — same surface as the bubble, pointing down-right
+   toward Arnold's head. */
+.egg-arnold-quote::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: -9px;
+  width: 18px;
+  height: 10px;
+  background: var(--raise-2);
+  clip-path: polygon(0 0, 100% 0, 72% 100%);
+}
+
+/* Spotify widget: December snow (SnowOverlay in SpotifyEasterEggs.tsx).
+   Negative animation-delays de-phase the flakes so the loop never shows a
+   synchronized "curtain"; 640px covers the tallest card, shorter cards just
+   clip the tail of each fall. */
+.egg-snowflake {
+  position: absolute;
+  top: -8px;
+  border-radius: 9999px;
+  animation-name: egg-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes egg-snow-fall {
+  from { transform: translateY(0) translateX(0); }
+  to   { transform: translateY(648px) translateX(18px); }
+}
+
+/* Spotify widget: the record turning in its sleeve (Record in
+   SpotifyPlayerCard.tsx). A CSS animation rather than a motion one so that
+   `animation-play-state: paused` freezes the angle where the track stopped —
+   a motion loop restarts from 0° and the record visibly snaps back. 10 rpm:
+   a true 33⅓ smears the groove highlights into a blur at this size. */
+.spotify-vinyl {
+  animation: spotify-vinyl-spin 6s linear infinite;
+}
+@keyframes spotify-vinyl-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ══ PANEL WIDGETOV (widgets/WidgetTray.tsx) ═════════════════════════════════
+   Vyskakovací panel nad lištou oblastí: dvojstĺpcová mriežka dlaždíc v troch
+   veľkostiach (malá, široká, veľká). Plochý ako zvyšok panela — dlaždica je
+   `--raise` na `--tray` a tieň má len samotný panel (výnimka `.menu-pop`,
+   DESIGN.md §1.2). Kontajner je MIMO vrstiev, lebo prebíja výplň `.menu-pop`,
+   ktorá tiež vo vrstve nie je; všetko vnútri je v `@layer components`, aby
+   utility (`flex-row`, `gap-3`) na dlaždici fungovali. */
+.widget-tray.menu-pop {
+  position: fixed;
+  left: var(--wt-left, 64px);
+  bottom: var(--wt-bottom, 12px);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  width: 372px;
+  max-width: calc(100vw - var(--wt-left, 64px) - 16px);
+  max-height: calc(100dvh - var(--wt-bottom, 12px) - 12px);
+  border-radius: var(--r-tile);
+  /* Zaoblené rohy musia rolovaný obsah aj orezať — bez toho z nich pri
+     rolovaní vytŕčali dlaždice spod `.wt-scroll`, ktorý je obdĺžnik. */
+  overflow: hidden;
+  background: var(--tray);
+  outline: none;
+  transform-origin: 0% 100%;
+  animation: wt-tray-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --wt-track: color-mix(in srgb, var(--text) 11%, transparent);
+}
+/* Ten istý tieň `.menu-pop`, len hlbší — vo svetlej téme. Panel je vysoký cez
+   celú obrazovku a leží nad celým dashboardom, takže tieň stavaný na malé menu
+   (-14px rozptyl, 0,22) sa na jeho hranách stratil a panel splýval so stránkou.
+   Tmavá téma ho nepotrebuje: tam nesie 0,7 a oddeľuje dosť. */
+:root.light .widget-tray.menu-pop {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 6px 16px -6px rgba(0, 0, 0, 0.12),
+    0 24px 56px -16px rgba(0, 0, 0, 0.32);
+}
+/* Pristátý panel je pokračovanie záložky tlačidla: ľavý dolný roh je rovný
+   (spodok záložky a panela je jedna hrana) a tieň na ľavom okraji sa oreže —
+   inak by na spoji so záložkou kreslil tmavý šev. Vľavo je aj tak len lišta. */
+.widget-tray.menu-pop[data-docked] {
+  border-bottom-left-radius: 0;
+  clip-path: inset(-80px -80px -80px 0);
+}
+/* Panel rastie zo záložky: pôvod je ľavý dolný roh a bez posunu, takže roh,
+   ktorým sa drží záložky, sa počas nábehu nepohne. */
+@keyframes wt-tray-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes wt-tile-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@layer components {
+  .wt-loading { height: 260px; }
+  .wt-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 16px 12px 18px;
+  }
+  .wt-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 8px 8px;
+    /* Bez posuvníka — v úzkom paneli bol len pásom pri pravom okraji. */
+    scrollbar-width: none;
+  }
+  .wt-scroll::-webkit-scrollbar { display: none; }
+  .wt-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 140px;
+    grid-auto-flow: row dense;
+    gap: 8px;
+  }
+  .wt-tile {
+    position: relative;
+    min-width: 0;
+    border-radius: var(--r-sm);
+    background: var(--raise);
+    overflow: hidden;
+    animation: wt-tile-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 35ms + 60ms);
+  }
+  .wt-tile[data-size="m"] { grid-column: span 2; }
+  .wt-tile[data-size="l"] { grid-column: span 2; grid-row: span 2; }
+  .wt-tile[data-editing] { cursor: grab; }
+  .wt-tile[data-editing] .wt-body { opacity: 0.4; pointer-events: none; }
+  .wt-tile-dragging { opacity: 0.35; }
+
+  /* Telo dlaždice — absolútne, aby si widget vedel zafarbiť CELÚ plochu
+     (hudba farbou obalu) bez toho, aby panel poznal jeho farby. */
+  .wt-body {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 13px 14px 14px;
+    border-radius: inherit;
+    transition: background-color 600ms ease, opacity var(--transition-base);
+  }
+  .wt-body.wt-tinted { background: color-mix(in oklab, var(--wt-tint) 24%, var(--raise)); }
+  :root.light .wt-body.wt-tinted { background: color-mix(in oklab, var(--wt-tint) 14%, var(--raise)); }
+
+  .wt-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 20px;
+  }
+  /* Hlavička je tlačidlo, takže písmo nesie rodič (button { font: inherit }). */
+  .wt-head-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: color var(--transition-base);
+  }
+  button.wt-head-link:hover { color: var(--text); }
+  .wt-head-static { cursor: default; }
+  .wt-head-icon { font-size: 12.5px; flex-shrink: 0; }
+  .wt-head-chevron {
+    font-size: 9px;
+    opacity: 0;
+    transform: translateX(-3px);
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+  button.wt-head-link:hover .wt-head-chevron,
+  button.wt-head-link:focus-visible .wt-head-chevron { opacity: 1; transform: none; }
+
+  .wt-big {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .wt-big-time {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .wt-amount {
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .wt-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--r-pill);
+    background: var(--raise-2);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .wt-count-alert { background: var(--red-bg); color: var(--red); }
+
+  .wt-meter, .wt-track {
+    position: relative;
+    height: 4px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--wt-track);
+    overflow: hidden;
+  }
+  .wt-track { height: 3px; }
+  .wt-meter > i, .wt-track > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: var(--text);
+    transition: width 900ms linear;
+  }
+
+  /* Príchody po hodinách — stĺpiky na jednej základni. */
+  .wt-hours {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 46px;
+  }
+  .wt-hour {
+    display: flex;
+    flex: 1 1 0;
+    align-items: flex-end;
+    height: 100%;
+    min-width: 0;
+  }
+  .wt-hour > i {
+    display: block;
+    width: 100%;
+    border-radius: 2px;
+  }
+
+  /* Otváracie hodiny ako tabuľka na dverách: deň vľavo, čas vpravo, dnešok
+     plným atramentom. Žiadna pilulka ani pásik — riadok textu je to, čo ľudia
+     z dverí fitka poznajú. */
+  .wt-sign {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    width: 158px;
+    flex-shrink: 0;
+    padding-bottom: 1px;
+  }
+  .wt-sign-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    font-weight: 500;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .wt-sign-day { white-space: nowrap; text-transform: capitalize; }
+  .wt-sign-time { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+  .wt-sign-today { color: var(--text); font-weight: 700; }
+
+  /* Šatňa v malom: bunka za každú skrinku. Obsadená je plná, voľná je len
+     stopa — svetlosťou sa líšia natoľko, že ich rozlíši aj ten, kto farby
+     nerozoznáva; mimo prevádzky nesie jantár. */
+  .wt-lockers {
+    display: grid;
+    gap: 3px;
+    margin-top: 2px;
+  }
+  .wt-lockers > i {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: var(--wt-track);
+  }
+  .wt-lockers > i[data-state="taken"] { background: var(--text-2); }
+  .wt-lockers > i[data-state="broken"] { background: color-mix(in srgb, var(--amber) 75%, transparent); }
+
+  /* Riadok termínu: farebná páska, čas, názov. */
+  .wt-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 3px 0 3px 10px;
+    border-radius: 8px;
+  }
+  .wt-row-bar {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+  }
+  button.wt-row { width: 100%; font: inherit; transition: background-color var(--transition-base); }
+  button.wt-row:hover { background: var(--raise-2); }
+
+  .wt-plain { font: inherit; color: inherit; }
+
+  /* Úloha: krúžok na odškrtnutie a názov. */
+  .wt-task {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 4px 4px 4px 0;
+    transition: opacity 300ms ease;
+  }
+  .wt-task-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .wt-check {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    color: var(--text-4);
+    transition: color var(--transition-base), background-color var(--transition-base);
+  }
+  .wt-check:hover { color: var(--green); background: var(--green-bg); }
+  .wt-task-done .wt-check { color: var(--green); }
+  .wt-task-done .wt-task-title { color: var(--text-4); text-decoration: line-through; }
+  .wt-task-done { opacity: 0.7; }
+
+  /* Človek v zozname (narodeniny, končiace permanentky). */
+  .wt-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 4px 6px 4px 2px;
+    border-radius: 10px;
+    font: inherit;
+    text-align: left;
+    transition: background-color var(--transition-base);
+  }
+  .wt-person:hover { background: var(--raise-2); }
+  .wt-avatars { display: flex; }
+  .wt-avatar {
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    box-shadow: 0 0 0 2px var(--raise);
+    transition: transform var(--transition-base);
+  }
+  .wt-avatar + .wt-avatar { margin-left: -8px; }
+  .wt-avatar:hover { transform: translateY(-2px); }
+
+  /* Hudba: platňa z karty Spotify v menšom. */
+  .wt-vinyl { transition: transform 700ms cubic-bezier(0.34, 1.32, 0.5, 1); }
+  .wt-arm { transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1); pointer-events: none; }
+  .wt-play {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--text);
+    color: var(--bg);
+    transition: transform var(--transition-base);
+  }
+  .wt-play:hover { transform: scale(1.06); }
+  .wt-play:active { transform: scale(0.95); }
+  .wt-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    color: var(--text-2);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .wt-icon-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text); }
+  .wt-icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* Tlačidlo s ikonou a textom má VŽDY podklad — inak sa číta ako holý text. */
+  .wt-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px; /* ovládač, nie štítok */
+    background: var(--raise-2);
+    color: var(--text);
+    white-space: nowrap;
+    transition: background-color var(--transition-base);
+  }
+  .wt-pill:hover { background: var(--pick); }
+  /* Vo svetlej téme je `--raise-2` od `--tray` o krok, ktorý oko nevidí —
+     tlačidlo na paneli tam berie bielu kartu, rovnako ako dlaždice. */
+  :root.light .widget-tray .wt-pill:not(.wt-pill-on) { background: var(--raise); }
+  :root.light .widget-tray .wt-pill:not(.wt-pill-on):hover { background: var(--raise-2); }
+  .wt-pill-on { background: var(--text); color: var(--bg); }
+  .wt-pill-on:hover { background: var(--text); }
+
+  .wt-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 36px 24px 40px;
+    text-align: center;
+  }
+
+  /* Úprava: odobrať, posunúť, zmeniť veľkosť. */
+  .wt-remove {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--text);
+    color: var(--bg);
+    animation: wt-tile-in 200ms ease both;
+  }
+  .wt-remove:hover { background: var(--red); color: #fff; }
+  .wt-edit-bar {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px; /* ovládač, nie štítok */
+    background: var(--pick);
+    /* `translate`, nie `transform`: animácia nástupu nastavuje transform
+       a centrovanie by prebila — lišta by skončila o pol šírky vpravo. */
+    translate: -50% 0;
+    white-space: nowrap;
+    animation: wt-tile-in 200ms ease both;
+  }
+  .wt-edit-btn {
+    display: grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    color: var(--text-2);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .wt-edit-btn:hover:not(:disabled) { background: var(--pop-hover); color: var(--text); }
+  .wt-edit-btn:disabled { opacity: 0.3; cursor: default; }
+  .wt-edit-size { color: var(--text); padding: 0 10px; }
+
+  .wt-add {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 14px 10px 6px;
+  }
+  .wt-add-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 6px;
+    border-radius: 10px;
+  }
+  .wt-add-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--raise-2);
+    color: var(--text);
+    transition: background-color var(--transition-base);
+  }
+  .wt-add-btn:hover { background: var(--pick); }
+  :root.light .widget-tray .wt-add-btn { background: var(--raise); }
+  :root.light .widget-tray .wt-add-btn:hover { background: var(--raise-2); }
+}
+
+/* Písmo TLAČIDIEL panela je mimo vrstiev zámerne: `button { font: inherit }`
+   tiež žiadnu vrstvu nemá, takže by vo vrstve `components` vyhralo a tlačidlo
+   by zdedilo písmo rodiča (ikona prehrať by narástla na 16 px). */
+button.wt-head-link { font: 600 12.5px/1.2 var(--font-sans); }
+.wt-pill { font: 600 12.5px/1 var(--font-sans); }
+.wt-edit-size { font: 700 12px/1 var(--font-sans); }
+.wt-icon-btn { font-size: 14px; }
+.wt-check { font-size: 16px; }
+.wt-remove { font-size: 11px; }
+.wt-edit-btn { font-size: 12px; }
+.wt-add-btn { font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-tray.menu-pop,
+  .wt-tile,
+  .wt-remove,
+  .wt-edit-bar { animation: none; }
+  .wt-vinyl,
+  .wt-arm,
+  .wt-meter > i,
+  .wt-track > i { transition: none; }
+}
+
+/* ══ RÝCHLE AKCIE (dashboard/QuickActionsMenu.tsx) ═══════════════════════════
+   Panel pod červeným tlačidlom Prehľadu: hore mriežka DLAŽDÍC (úkony pri
+   pulte, každá s číslom 1–9), pod ňou drobné ČIPY (presuny do sekcií).
+   Ten istý slovník ako panel widgetov — v tmavej téme je panel `--tray`
+   a dlaždica `--raise`, aby dlaždice od panela odskočili ako karty od stránky.
+   Vo svetlej je panel biely (`--pop`) a dlaždica o stupeň pod ním (`--nest`):
+   biela dlaždica na `--tray` by pod myšou (`--raise-2`) splynula s panelom.
+   Vybraná dlaždica (myš aj šípky — je to jeden stav, `data-active`) berie
+   `--pick`, výber, nie hover, lebo pri pulte sa ovláda klávesnicou a výber
+   musí byť vidieť z pol metra. Bez obrysov a bez farebných ikon: červená na
+   Prehľade patrí len tlačidlu, ktoré tento panel otvára.
+   Kontajner je MIMO vrstiev, lebo prebíja výplň `.menu-pop` (tá vo vrstve nie
+   je); obsah je v `@layer components`, aby na ňom fungovali utility. */
+.qa-pop.menu-pop {
+  --qa-tile: var(--raise);
+  --qa-tile-on: var(--pick);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--r-tile);
+  background: var(--tray);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  outline: none;
+  transform-origin: 100% 0;
+  animation: qa-pop-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.qa-pop.menu-pop::-webkit-scrollbar { display: none; }
+:root.light .qa-pop.menu-pop {
+  --qa-tile: var(--nest);
+  --qa-tile-on: var(--raise-2);
+  background: var(--pop);
+}
+@keyframes qa-pop-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@layer components {
+  .qa-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  @media (min-width: 340px) {
+    .qa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* Nepárna posledná dlaždica sa roztiahne cez celý riadok — prázdne miesto
+       vedľa nej vyzeralo ako dlaždica, ktorá sa nenačítala. */
+    .qa-grid > .qa-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  .qa-tile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    min-height: 64px;
+    padding: 12px 12px 12px 14px;
+    border-radius: var(--r-sm);
+    background: var(--qa-tile);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 120ms ease;
+  }
+  .qa-tile[data-active] { background: var(--qa-tile-on); }
+  .qa-tile:active { transform: scale(0.985); }
+  .qa-tile-icon {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    flex-shrink: 0;
+    font-size: 19px;
+    color: var(--text-2);
+    transition: color 120ms ease;
+  }
+  .qa-tile[data-active] .qa-tile-icon { color: var(--text); }
+  /* MultiSport je jediná farebná dlaždica: zákazník podáva kartu cez pult
+     a recepčná ju má nájsť bez čítania. Plocha je nádych značkovej modrej
+     (#394898), značka v nej plnou farbou. Tmavá téma dostáva svetlejší odtieň
+     tej istej modrej — pôvodná má na tmavej ploche kontrast okolo 2 : 1. */
+  .qa-tile[data-brand="multisport"] {
+    --qa-brand: #394898;
+    --qa-brand-ink: #a3b0ff;
+    background: color-mix(in srgb, var(--qa-brand) 22%, var(--qa-tile));
+  }
+  .qa-tile[data-brand="multisport"][data-active] {
+    background: color-mix(in srgb, var(--qa-brand) 36%, var(--qa-tile));
+  }
+  .qa-tile[data-brand="multisport"] .qa-tile-icon,
+  .qa-tile[data-brand="multisport"][data-active] .qa-tile-icon { color: var(--qa-brand-ink); }
+  :root.light .qa-tile[data-brand="multisport"] { --qa-brand-ink: #394898; background: color-mix(in srgb, var(--qa-brand) 11%, var(--qa-tile)); }
+  :root.light .qa-tile[data-brand="multisport"][data-active] { background: color-mix(in srgb, var(--qa-brand) 19%, var(--qa-tile)); }
+  .qa-tile-text {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .qa-tile-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .qa-tile-fact {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .qa-tile-fact[data-tone="amber"] { color: var(--amber); }
+  .qa-tile-key { align-self: flex-start; }
+
+  .qa-places {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 2px 2px;
+  }
+  .qa-places-title {
+    padding-left: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-3);
+  }
+  /* Písmo čipov nesie RODIČ: `button { font: inherit }` v tomto súbore je
+     mimo vrstiev, takže veľkosť napísaná na samotnom tlačidle by sa zahodila. */
+  .qa-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .qa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px 0 12px;
+    border-radius: 999px;
+    background: var(--qa-tile);
+    color: var(--text-2);
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  .qa-chip[data-active] {
+    background: var(--qa-tile-on);
+    color: var(--text);
+  }
+  .qa-chip-icon {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .qa-chip[data-active] .qa-chip-icon { color: var(--text-2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qa-pop.menu-pop { animation: none; }
+  .qa-tile:active { transform: none; }
+}
+
+/* ── Ovládanie priestorov: ikona výstupu robí to, čo robí vec za ňou ────────
+   (RelayGlyph.tsx na dlaždiciach v relays/ControlsTab.tsx). Ikony sú vlastné
+   SVG zložené z DIELOV — lopatky, plameň, lúče, rameno závory, strmeň zámku —
+   a hýbe sa diel okolo svojej osi, nie celá ikona: ventilátor sa točí v ráme,
+   závora sa dvíha okolo čapu, zvonček sa hojdá a srdce v ňom mu zaostáva.
+   Dva stavy: `data-on` = vec naozaj beží (slučka alebo póza; dobeh po
+   vypnutí robí RelayGlyph.tsx skriptom z polohy, kde diel práve bol — CSS by
+   skočila rovno do pokoja) a `data-kick` =
+   práve prešiel impulz (turniket po otvorení v stave „zapnuté" neostáva, takže
+   slučka by ho nikdy neukázala). Farba (`--glyph-tone`) patrí VECI a svieti
+   len kým beží. Pohyb nesie ten istý stav ako farba a póza, nie navyše —
+   preto ho „obmedziť pohyb" vypne celý, póza ostane a nič sa nestratí.
+   Oneskorenia dielov sú premenné `--d`/`--t` (inline), nie `animation-delay`:
+   jednorazový impulz sa tak na všetkých dieloch spustí naraz. */
+.relay-glyph {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  color: var(--text-2);
+}
+.relay-glyph[data-on],
+.relay-glyph[data-kick] { color: var(--glyph-tone); }
+.relay-glyph[data-offline] { color: var(--text-3); }
+.relay-glyph .rg-tint { fill: currentColor; fill-opacity: 0; }
+.relay-glyph[data-on] .rg-tint,
+.relay-glyph[data-kick] .rg-tint { fill-opacity: .22; }
+.relay-glyph .rg-dot { fill: currentColor; stroke: none; }
+/* Diely, ktoré existujú len kým vec beží (teplo, lúče, zrnká mrazu). */
+.relay-glyph .rg-lit { opacity: 0; }
+.relay-glyph[data-on] .rg-lit { opacity: 1; }
+/* Osi otáčania — v súradniciach viewBoxu 24×24. */
+.relay-glyph .rg-rotor,
+.relay-glyph .rg-flake,
+.relay-glyph .rg-rays,
+.relay-glyph .rg-core     { transform-origin: 12px 12px; }
+.relay-glyph .rg-flap-l   { transform-origin: 6.5px 12px; }
+.relay-glyph .rg-flap-r   { transform-origin: 17.5px 12px; }
+.relay-glyph .rg-bell,
+.relay-glyph .rg-clapper  { transform-origin: 12px 3.3px; }
+.relay-glyph .rg-flame-out,
+.relay-glyph .rg-flame-in { transform-origin: 12px 21.5px; }
+.relay-glyph .rg-bray     { transform-origin: 12px 9px; }
+.relay-glyph .rg-bar      { transform-box: fill-box; transform-origin: 50% 100%; }
+.relay-glyph .rg-arm      { transform-origin: 7.5px 13px; }
+.relay-glyph .rg-door     { transform-origin: 5.5px 12px; }
+.relay-glyph .rg-shackle  { transform-origin: 8px 11px; }
+.relay-glyph .rg-lamp     { fill: var(--lamp); fill-opacity: 0; }
+/* Pózy impulzových výstupov držaných otvorené: závora hore, dvere otvorené,
+   zámok s vytiahnutým strmeňom, krídla turniketa odklopené k stĺpikom. Je to stav, nie pohyb, preto stojí mimo
+   bloku nižšie a ostáva aj pri obmedzenom pohybe. */
+.relay-glyph[data-on][data-kind="gate"] .rg-arm { transform: rotate(-70deg); }
+.relay-glyph[data-on][data-kind="door"] .rg-door { transform: scaleX(.45) skewY(-9deg); }
+.relay-glyph[data-on][data-kind="locker"] .rg-shackle { transform: translateY(-2.4px) rotate(-18deg); }
+.relay-glyph[data-on][data-kind="turnstile"] .rg-flap-l { transform: scaleX(.22) skewY(-9deg); }
+.relay-glyph[data-on][data-kind="turnstile"] .rg-flap-r { transform: scaleX(.22) skewY(9deg); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .relay-glyph { transition: color .35s ease; }
+  .relay-glyph .rg-tint { transition: fill-opacity .35s ease; }
+  .relay-glyph .rg-lit { transition: opacity .35s ease; }
+  .relay-glyph .rg-arm,
+  .relay-glyph .rg-door,
+  .relay-glyph .rg-shackle,
+  .relay-glyph .rg-flap-l,
+  .relay-glyph .rg-flap-r { transition: transform .55s cubic-bezier(.3, .7, .3, 1); }
+
+  /* Ventilácia: rozbeh (na konci presne rýchlosťou slučky — 360° / .7 s) a
+     slučka. Dobeh po vypnutí robí RelayGlyph.tsx (COAST) z uhla, kde rotor
+     práve bol — rýchlosti slučiek tam musia sedieť s týmito. */
+  .relay-glyph[data-on][data-kind="ventilation"] .rg-rotor {
+    animation: relay-spin 1.4s cubic-bezier(.5, 0, 1, 1) 1, relay-spin .7s linear 1.4s infinite;
+  }
+  /* Klimatizácia: vločka sa pomaly otáča, ramená dýchajú, padajú zrnká mrazu. */
+  .relay-glyph[data-on][data-kind="cooling"] .rg-flake { animation: relay-spin 14s linear infinite; }
+  .relay-glyph[data-on][data-kind="cooling"] .rg-tip   { animation: relay-tip 2.4s ease-in-out var(--d, 0s) infinite; }
+  .relay-glyph[data-on][data-kind="cooling"] .rg-frost { animation: relay-frost 2.4s linear var(--d, 0s) infinite; }
+  /* Kúrenie: z radiátora stúpa teplo. */
+  .relay-glyph[data-on][data-kind="heating"] .rg-wave { animation: relay-heat 1.8s ease-in-out var(--d, 0s) infinite; }
+  /* Sauna: dva plamene v protitakte a iskry. */
+  .relay-glyph[data-on][data-kind="sauna"] .rg-flame-out { animation: relay-flame 1.7s ease-in-out infinite; }
+  .relay-glyph[data-on][data-kind="sauna"] .rg-flame-in  { animation: relay-flame-in 1.1s ease-in-out infinite; }
+  .relay-glyph[data-on][data-kind="sauna"] .rg-spark     { animation: relay-spark 1.9s ease-out var(--d, 0s) infinite; }
+  /* Solárium: veniec lúčov sa otáča, lúče pulzujú na striedačku, jadro dýcha. */
+  .relay-glyph[data-on][data-kind="solarium"] .rg-rays { animation: relay-spin 18s linear infinite; }
+  .relay-glyph[data-on][data-kind="solarium"] .rg-ray  { animation: relay-ray .8s ease-in-out var(--d, 0s) infinite alternate; }
+  .relay-glyph[data-on][data-kind="solarium"] .rg-core { animation: relay-breathe 3.2s ease-in-out infinite; }
+  /* Svetlá: žiarivka pri zapnutí preblikne, potom sa rozsvietia lúče. */
+  .relay-glyph[data-on][data-kind="light"] .rg-glass,
+  .relay-glyph[data-on][data-kind="light"] .rg-filament { animation: relay-flicker .7s linear 1; }
+  .relay-glyph[data-on][data-kind="light"] .rg-bray {
+    animation: relay-ray-in .45s cubic-bezier(.2, .8, .3, 1) .55s both, relay-shimmer 2.6s ease-in-out 1s infinite;
+  }
+  /* Hudba: ekvalizér, každý stĺpec vo vlastnom tempe. */
+  .relay-glyph[data-on][data-kind="music"] .rg-bar { animation: relay-eq var(--t, .9s) ease-in-out var(--d, 0s) infinite; }
+  /* Siréna: kupola bliká, lúče sa striedajú zľava doprava. */
+  .relay-glyph[data-on][data-kind="alarm"] .rg-dome  { animation: relay-siren .5s steps(1, end) infinite; }
+  .relay-glyph[data-on][data-kind="alarm"] .rg-ray-l { animation: relay-alt .5s steps(1, end) infinite; }
+  .relay-glyph[data-on][data-kind="alarm"] .rg-ray-r { animation: relay-alt .5s steps(1, end) -.25s infinite; }
+  /* Svetelný signál: červená → zelená → oranžová. */
+  .relay-glyph[data-on][data-kind="signal"] .rg-lamp { animation: relay-lamp 3s steps(1, end) var(--d, 0s) infinite; }
+  /* Zvonček: telo sa hojdá, srdce zaostáva a kmitá viac. */
+  .relay-glyph[data-on][data-kind="bell"] .rg-bell    { animation: relay-ring 1.2s ease-out infinite; }
+  .relay-glyph[data-on][data-kind="bell"] .rg-clapper { animation: relay-clapper 1.2s ease-out infinite; }
+  .relay-glyph[data-on][data-kind="bell"] .rg-bwave   { animation: relay-wave 1.2s ease-out infinite; }
+  .relay-glyph[data-on][data-kind="other"] .rg-bolt { animation: relay-alt 1.4s steps(1, end) infinite; }
+
+  /* Impulz — jednorazovo. Stojí ZA slučkami, aby pri rovnakej špecifickosti
+     vyhral, keď beží oboje naraz. Celá ikona sa pri ňom jemne nadýchne. */
+  .relay-glyph[data-kick] { animation: relay-pop .4s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="turnstile"] .rg-flap-l { animation: relay-flap-l 1.1s ease-in-out 1; }
+  .relay-glyph[data-kick][data-kind="turnstile"] .rg-flap-r { animation: relay-flap-r 1.1s ease-in-out 1; }
+  .relay-glyph[data-kick][data-kind="door"] .rg-door { animation: relay-door 1s ease-in-out 1; }
+  .relay-glyph[data-kick][data-kind="gate"] .rg-arm { animation: relay-gate 1.2s cubic-bezier(.4, 0, .3, 1) 1; }
+  .relay-glyph[data-kick][data-kind="locker"] .rg-shackle { animation: relay-unlock 1s ease-in-out 1; }
+  .relay-glyph[data-kick][data-kind="bell"] .rg-bell    { animation: relay-ring 1s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="bell"] .rg-clapper { animation: relay-clapper 1s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="bell"] .rg-bwave   { animation: relay-wave 1s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="light"] .rg-glass,
+  .relay-glyph[data-kick][data-kind="light"] .rg-filament { animation: relay-flicker .7s linear 1; }
+  .relay-glyph[data-kick][data-kind="light"] .rg-bray,
+  .relay-glyph[data-kick][data-kind="door"] .rg-lit,
+  .relay-glyph[data-kick][data-kind="turnstile"] .rg-lit,
+  .relay-glyph[data-kick][data-kind="alarm"] .rg-lit,
+  .relay-glyph[data-kick][data-kind="other"] .rg-bolt { animation: relay-flash .8s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="signal"] .rg-lamp { animation: relay-lamp-flash .8s ease-out 1; }
+  .relay-glyph[data-kick][data-kind="ventilation"] .rg-rotor,
+  .relay-glyph[data-kick][data-kind="cooling"] .rg-flake { animation: relay-spin .9s cubic-bezier(.3, .6, .4, 1) 1; }
+}
+/* Gombík ovládania v hlavičke (RelayQuickButton): vec, s ktorou sa práve
+   niečo deje, sa do neho vymení a po chvíli z neho odíde — nie skokom, lebo
+   ikona, ktorá zmizne naraz, sa číta ako preblik, nie ako koniec úkonu.
+   Dĺžka `out` musí sedieť so SWAP_OUT_MS v komponente. */
+.relay-swap { display: inline-grid; place-items: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .relay-swap[data-swap="in"]  { animation: relay-swap-in .3s cubic-bezier(.2, .8, .3, 1) both; }
+  .relay-swap[data-swap="out"] { animation: relay-swap-out .22s cubic-bezier(.5, 0, .75, 0) both; }
+}
+@keyframes relay-swap-in {
+  from { opacity: 0; transform: scale(.55) translateY(3px); }
+}
+@keyframes relay-swap-out {
+  to { opacity: 0; transform: scale(.55) translateY(-3px); }
+}
+@keyframes relay-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes relay-tip {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.1px); }
+}
+@keyframes relay-frost {
+  0%   { transform: translateY(-1px); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(6px); opacity: 0; }
+}
+@keyframes relay-heat {
+  0%   { transform: translateY(2px); opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: translateY(-2.5px); opacity: 0; }
+}
+@keyframes relay-flame {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  25%      { transform: scale(.95, 1.06) skewX(-3deg); }
+  50%      { transform: scale(1.03, .96) skewX(2deg); }
+  75%      { transform: scale(.98, 1.04) skewX(-1.5deg); }
+}
+@keyframes relay-flame-in {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  30%      { transform: scale(.9, 1.14) skewX(3deg); }
+  65%      { transform: scale(1.06, .9) skewX(-2deg); }
+}
+@keyframes relay-spark {
+  0%   { transform: translateY(1px); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translateY(-4px); opacity: 0; }
+}
+@keyframes relay-ray {
+  from { transform: translateY(.8px); opacity: .55; }
+  to   { transform: translateY(-.6px); opacity: 1; }
+}
+@keyframes relay-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+@keyframes relay-flicker {
+  0%   { opacity: .15; }
+  12%  { opacity: 1; }
+  24%  { opacity: .3; }
+  40%  { opacity: 1; }
+  55%  { opacity: .6; }
+  100% { opacity: 1; }
+}
+@keyframes relay-ray-in {
+  from { transform: scale(.55); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@keyframes relay-shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}
+@keyframes relay-eq {
+  0%, 100% { transform: scaleY(.3); }
+  50%      { transform: scaleY(1); }
+}
+@keyframes relay-siren {
+  0%  { fill-opacity: .7; }
+  50% { fill-opacity: .12; }
+}
+@keyframes relay-alt {
+  0%  { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes relay-lamp {
+  0%     { fill-opacity: 1; }
+  33.34% { fill-opacity: 0; }
+}
+@keyframes relay-lamp-flash {
+  0%   { fill-opacity: 0; }
+  20%  { fill-opacity: 1; }
+  100% { fill-opacity: 0; }
+}
+@keyframes relay-ring {
+  0%   { transform: rotate(0deg); }
+  12%  { transform: rotate(16deg); }
+  26%  { transform: rotate(-13deg); }
+  40%  { transform: rotate(9deg); }
+  54%  { transform: rotate(-6deg); }
+  68%  { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes relay-clapper {
+  0%   { transform: rotate(0deg); }
+  16%  { transform: rotate(-20deg); }
+  30%  { transform: rotate(18deg); }
+  44%  { transform: rotate(-13deg); }
+  58%  { transform: rotate(8deg); }
+  72%  { transform: rotate(-4deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes relay-wave {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  60%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes relay-flap-l {
+  0%, 100% { transform: scaleX(1) skewY(0deg); }
+  30%, 70% { transform: scaleX(.22) skewY(-9deg); }
+}
+@keyframes relay-flap-r {
+  0%, 100% { transform: scaleX(1) skewY(0deg); }
+  30%, 70% { transform: scaleX(.22) skewY(9deg); }
+}
+@keyframes relay-door {
+  0%, 100% { transform: scaleX(1) skewY(0deg); }
+  35%, 65% { transform: scaleX(.45) skewY(-9deg); }
+}
+@keyframes relay-gate {
+  0%, 100% { transform: rotate(0deg); }
+  35%, 65% { transform: rotate(-70deg); }
+}
+@keyframes relay-unlock {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%, 65% { transform: translateY(-2.4px) rotate(-18deg); }
+}
+@keyframes relay-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes relay-pop {
+  0%   { transform: scale(.88); }
+  60%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   MOBILE / TOUCH overrides — kept unlayered at the end of the file so they win
+   over Tailwind utility layers and the @layer components form rules above.
+   All are gated by touch/standalone/env() so they are strict no-ops on the
+   desktop mouse-driven panel.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* iOS zooms the viewport whenever a focused text control renders below 16px.
+   The design system sizes every `.field` at --control-font-size (14px), which
+   trips that zoom on every input/select/textarea/date field on a phone. On
+   coarse pointers only, lift the control font to 16px so focus never zooms —
+   desktop keeps the tighter 14px exactly as before. Covers selects and
+   textareas too (they share the .field rule) and any bare native control. */
+@media (pointer: coarse) {
+  :root {
+    --control-font-size: 1rem; /* 16px — iOS no-zoom threshold */
+  }
+  .field,
+  input.field,
+  select.field,
+  textarea.field,
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    font-size: 16px;
+  }
+
+  /* ── DOTYKOVÝ CIEĽ ────────────────────────────────────────────────────────
+     Tento blok riešil doteraz IBA veľkosť písma, čiže jedinú vec, ktorá sa
+     dotyku netýka. Kreslené rozmery ovládačov sú pritom pod odporúčaným
+     cieľom: tlačidlo 40, pilulka 38, `icon-button-sm` 36, `PickChip` ~33,
+     lišta hromadných akcií 32 — a `--control-height` (44) pozná len pole.
+     Na myši je to v poriadku (WCAG 2.5.8 žiada 24), na tablete pri pulte nie:
+     tam sa tou 32px pilulkou potvrdzuje hromadné zmazanie.
+
+     Preto sa dvíha `min-height`, nie `height`: `min-height` prebije aj
+     tailwindovú utilitu (`md:h-8` v `BulkBar`), takže netreba obchádzať
+     špecificitu na dvadsiatich volajúcich miestach. A dvíha sa LEN na hrubom
+     ukazovateli — kresba na desktope ostáva presne taká, akú popisuje
+     DESIGN.md §5. Neviditeľná plocha cez `::after` sa zámerne nepoužila:
+     pri zalomených čipoch s 8px medzerou by 44px prekryv kradol ťuk riadku
+     nad sebou. */
+  .primary-button,
+  .secondary-button,
+  .ink-button,
+  .icon-button-sm,
+  .pick-chip,
+  .filter-chip,
+  .tabs-pill-trigger {
+    min-height: var(--control-height) !important;
+  }
+  .icon-button-sm {
+    min-width: var(--control-height) !important;
+  }
+  /* Dráha pilulkových záložiek je pevných 48px s 5px paddingom — 44px pilulka
+     by z nej vytiekla, tak dráha rastie s ňou. */
+  .tabs-pill-list {
+    height: auto !important;
+  }
+}
+
+/* Installed-PWA notch: the topbar sits at y=0 under the iOS status bar when the
+   status-bar style is black-translucent. Grow the header by the safe-area inset
+   and pad its content down so the title/actions clear the status bar. In a
+   normal browser tab env(safe-area-inset-top) is 0, so the height collapses back
+   to the plain 4rem / 5rem and this is a pure no-op. */
+.app-topbar {
+  height: calc(4rem + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+}
+/* Na počítači je horná lišta riadok tmavého rámu nad kartami (64 px, ako v
+   Spotify) — rovnako vysoká ako na mobile. */
+@media (min-width: 768px) {
+  .app-topbar {
+    height: calc(4rem + env(safe-area-inset-top));
+  }
+}
+
+/* Tlačidlá vpravo v hornej lište — ako v Spotify: bez podkladu, ikona sivá,
+   pri hoveri a otvorenej ponuke biela. Je to modifikátor `.icon-button`
+   (rozmer, zaoblenie, prstenec focusu ostávajú), nie druhé tlačidlo — a je
+   mimo vrstiev, takže `.icon-button` z `@layer components` prebije bez
+   `!important`. „Otvorené" je atribút tlačidla (`aria-expanded`, stránka
+   Dokumentácie `aria-current`, zapnutý režim `data-active`), alebo otvorený
+   `<details>` pri spúšťači z `OverflowMenu`.
+   Ikona je obrysová a plná len pri ZVOLENOM tlačidle (hover ju len zbelí) —
+   obe verzie kreslí `TopbarGlyph` a prepínajú sa tu, tými istými podmienkami
+   ako biela, takže sa nemajú ako rozísť. */
+.topbar-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 1.125rem;
+}
+.topbar-icon:hover,
+.topbar-icon:is([aria-expanded="true"], [aria-current="page"], [data-active]),
+:is([aria-expanded="true"], details[open] > summary) > .topbar-icon {
+  background: transparent;
+  color: var(--text);
+}
+/* `svg.` kvôli váhe: štýl Font Awesome (`.svg-inline--fa { display: … }`) sa
+   vkladá za tento súbor a pri rovnakej váhe by vyhral. */
+svg.topbar-glyph-on { display: none; }
+.topbar-icon:is([aria-expanded="true"], [aria-current="page"], [data-active]) svg.topbar-glyph-on,
+:is([aria-expanded="true"], details[open] > summary) > .topbar-icon svg.topbar-glyph-on { display: inline-block; }
+.topbar-icon:is([aria-expanded="true"], [aria-current="page"], [data-active]) svg.topbar-glyph-idle,
+:is([aria-expanded="true"], details[open] > summary) > .topbar-icon svg.topbar-glyph-idle { display: none; }
+/* Logo rádia je obrázok, nie ikona — bez podkladu tlačidla by ako dlaždica
+   cez celé tlačidlo trčalo, tak má veľkosť ikony. */
+.topbar-icon .mp-btn-logo {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 6px;
+}
+
+/* Topbar overflow ("kebab") menu row — a full-width, tappable menu item that
+   mirrors the LocationSwitcher/menu-pop idiom: icon slot + Slovak label. */
+.topbar-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border-radius: 12px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-align: left;
+  transition: background-color var(--transition-base);
+}
+.topbar-menu-row:hover { background: var(--row-hover); }
+.topbar-menu-row:active { transform: scale(var(--press-scale)); }
+.topbar-menu-row .topbar-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  color: var(--text-3);
+}
+
+/* ── Mapa okresov (super admin → Prieskum trhu) ─────────────────────────────
+   Okres, ktorý beh práve spracúva. Pulzuje KRYTIE, nie farba ani rozmer:
+   mapa je plocha zložená zo susediacich tvarov, takže čokoľvek, čo mení
+   veľkosť, by hýbalo hranicou so susedom. */
+@keyframes sk-map-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes sk-map-pulse {
+    0%, 100% { opacity: 1; }
+  }
+}
+
+/* ── Slučkové animácie a „obmedziť pohyb" ──────────────────────────────────
+   Tri `prefers-reduced-motion` bloky vyššie kryjú `.analyst-*`, `.pick-*`
+   a `sk-map-pulse` — teda presne to, čo si panel nakreslil sám. Slučky, ktoré
+   naozaj bežia stovky sekúnd denne, sú pritom tailwindové utility (`animate-spin`
+   144×, `animate-pulse` 14×, `animate-ping` 3×) a tie nekryl ani jeden. Na
+   pokladni, kde sa hore krúti kolieskom pri každom ukladaní, je to práve ten
+   trvalý pohyb v periférnom videní, kvôli ktorému to nastavenie existuje.
+
+   Nie je to vypnutie plošným `0.01ms`: točenie sa SPOMALÍ, nezastaví. Zastavené
+   koliesko sa číta ako zamrznutý panel, čo je horšia informácia než pomalé —
+   pohyb tu nesie stav („pracuje sa"), a ten sa zachovať musí. Pulz a ping stav
+   nenesú (kostra je sivý blok aj bez neho, ping je len kruh okolo bodky), tak
+   tie sa zastavia úplne.
+
+   Mimo vrstiev zámerne: nevrstvené pravidlo prebije `@layer` utility, takže sa
+   nemusí prekrikovať `!important` s Tailwindom. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin { animation-duration: 2.4s; }
+  .animate-pulse,
+  .animate-ping { animation: none; }
+}
+
+/* ── Sekundárne tlačidlo na karte ──────────────────────────────────────────
+   `--secondary` je `--raise`, teda PRESNE farba karty — tlačidlo s ikonou a
+   popisom („Uložiť odkaz", „Kopírovať", „Otvoriť náhľad") na nej nemalo žiadny
+   tvar a čítalo sa ako holý text. Na povrchu označenom `data-surface="card"`
+   (koreň `SettingsGroup`) sa preto kreslí o stupeň nižšie, na `--nest` /
+   `--nest-hover` — tú istú dvojicu, akou kreslí pokoj `.pick` a `PaymentMethods`
+   so `surface="card"` (DESIGN.md → Pick, Spôsoby platby).
+
+   Mimo vrstiev zámerne, z toho istého dôvodu ako blok vyššie: `bg-secondary` je
+   tailwindová utilita vo vrstve `utilities`, ktorá by pravidlo z `components`
+   prebila bez ohľadu na špecifickosť. */
+[data-surface="card"] [data-slot="button"][data-variant="secondary"],
+[data-surface="card"] .secondary-button {
+  background: var(--nest);
+}
+[data-surface="card"] [data-slot="button"][data-variant="secondary"]:hover:not(:disabled),
+[data-surface="card"] [data-slot="button"][data-variant="secondary"][aria-expanded="true"],
+[data-surface="card"] .secondary-button:hover:not(:disabled) {
+  background: var(--nest-hover);
+}
+
+/* ── AI bublina v hlavičke (components/aibubble/AiBubble.tsx) ─────────────
+   Plávajúci panel pod hlavičkou, „Siri" spôsob. Orb z React Bits je pozadie:
+   v prázdnom stave veľký uprostred, počas konverzácie odsunutý hore a stlmený,
+   aby text nad ním ostal čitateľný. Hĺbka je plocha (--raise), nie obrys. */
+.ai-bubble {
+  position: fixed;
+  z-index: 60;
+  top: 4.25rem;
+  right: 1rem;
+  width: min(26.5rem, calc(100vw - 2rem));
+  --ai-bubble-h: min(40rem, calc(100dvh - 5.5rem));
+  height: var(--ai-bubble-h);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: var(--raise);
+  box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / .55), 0 .25rem 1rem rgb(0 0 0 / .25);
+  transform-origin: top right;
+  isolation: isolate;
+}
+:root.light .ai-bubble { box-shadow: 0 1.5rem 3.5rem -1rem rgb(0 0 0 / .2), 0 .25rem 1rem rgb(0 0 0 / .08); }
+/* Na počítači bublina nepláva pod hlavičkou, ale patrí do RÁMU panela: Shell
+   pre ňu drží posledný stĺpec mriežky (`.ai-dock`, šírka `auto`, prázdny = 0).
+   Kde stojí, rozhoduje AiBubble (`data-placement`), nie CSS:
+   - `dock` (široké okno) — tretia zaoblená plocha vedľa karty obsahu, tie
+     isté okraje (8 px), to isté zaoblenie (14 px) a bez tieňa, ako panel
+     stránok aj karta obsahu; obsah sa o ňu zúži,
+   - `overlay` (užšie okno) — rovnaký tvar, ale leží nad pravou časťou karty
+     obsahu, takže tieň mu ostáva (je NAD niečím).
+   Výška je celá karta, nie pevných 40rem, a orb sa ďalej odvodzuje od nej:
+   `container-type: size` dáva `100cqh` = výška bubliny. */
+.ai-dock { display: none; }
+@media (min-width: 768px) {
+  .ai-dock { display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0; }
+}
+.ai-bubble[data-placement="dock"],
+.ai-bubble[data-placement="overlay"] {
+  width: min(26.5rem, calc(100vw - 6rem));
+  height: auto;
+  --ai-bubble-h: 100cqh;
+  container-type: size;
+  border-radius: 14px;
+}
+:root .ai-bubble[data-placement="dock"] {
+  position: relative;
+  z-index: auto;
+  top: auto;
+  right: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 .5rem .5rem 0;
+  box-shadow: none;
+}
+.ai-bubble[data-placement="overlay"] {
+  position: absolute;
+  top: 0;
+  right: .5rem;
+  bottom: .5rem;
+}
+.ai-bubble-orb {
+  /* Orb má PEVNÚ veľkosť a hýbe sa len transformom: meniť width/height by
+     menilo veľkosť WebGL canvasu počas prechodu (preblik a trhanie). Pokoj =
+     veľký nad pozdravom, konverzácia = zväčšený a vysunutý tak, že spoza
+     hornej hrany trčí len jeho spodná polovica. */
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 0;
+  width: 20rem;
+  height: 20rem;
+  transform: translate(-50%, calc(var(--ai-bubble-h) * .22 - 6rem));
+  pointer-events: none;
+  transition: transform .7s cubic-bezier(.2, .8, .2, 1), opacity .7s ease;
+}
+.ai-bubble-orb.is-docked { transform: translate(-50%, -10rem) scale(1.3); opacity: .22; }
+.ai-bubble-top {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .625rem .625rem .25rem 1rem;
+}
+.ai-bubble-ghost {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: .625rem;
+  color: var(--text-2);
+}
+.ai-bubble-ghost:hover { background: var(--raise-2); color: var(--text); }
+.ai-bubble-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: .5rem 1rem 1rem;
+  overscroll-behavior: contain;
+}
+/* Namiesto ostrého odrezania pod hlavičkou: mliečny prechod, ktorý rozmaže
+   a stlmí text odchádzajúci hore. Je to SÚRODENEC rolovacej plochy, nie jej
+   sticky pseudo-prvok: sticky sa v kontajneri s paddingom lepí až POD padding,
+   takže nad ním ostávala pásik ostrého textu. Rozmazanie je postupné — tri
+   vrstvy so stúpajúcim blur, každá maskovaná na svoj pás —, lebo jeden blur
+   pod gradientovou maskou má tvrdý okraj a čítal sa ako šmuha. Zapína sa až po
+   odrolovaní (data-scrolled), inak by rozmazal začiatok prvej správy. */
+.ai-bubble-scroll-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ai-bubble-fade {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto;
+  height: 2.75rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s ease;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--raise) 85%, transparent), transparent);
+}
+.ai-bubble-scroll[data-scrolled] + .ai-bubble-fade { opacity: 1; }
+.ai-bubble-fade > span { position: absolute; inset: 0; }
+.ai-bubble-fade > span:nth-child(1) {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+}
+.ai-bubble-fade > span:nth-child(2) {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 20%, transparent 70%);
+  mask-image: linear-gradient(to bottom, #000 20%, transparent 70%);
+}
+.ai-bubble-fade > span:nth-child(3) {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 40%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 40%);
+}
+.ai-bubble-empty {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: center;
+  padding-bottom: .5rem;
+}
+.ai-bubble-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2rem;
+  padding: 0 .75rem;
+  border-radius: 999px;
+  background: var(--raise-2);
+  color: var(--text);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.ai-bubble-chip:hover:not(:disabled) { background: var(--bg); }
+.ai-bubble-chip:disabled { opacity: .5; }
+/* Žiara za vláknom AI kolegu: dole mizne do plochy, aby text odpovede nikdy
+   nestál na farbe, a je stlmená — je to nálada pracujúceho kolegu, nie obsah. */
+.analyst-aurora {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .6) 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .6) 45%, transparent 100%);
+}
+.analyst-aurora > div { opacity: .55; }
+:root.light .analyst-aurora > div { opacity: .35; }
+.ai-bubble-user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: .5rem .8rem;
+  border-radius: 1rem 1rem .3rem 1rem;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 13.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transform-origin: bottom left;
+  will-change: transform;
+}
+.ai-bubble-reply { display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
+/* Priebeh práce nad odpoveďou (BubbleTrace.tsx): bez plochy a obrysu, ikona
+   podľa druhu práce, nadpis a pod ním stlmený detail. Stĺpec ikon je spoločný
+   pre hlavičku aj kroky, aby text stál pod textom. */
+.ai-trace { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.ai-trace-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  margin: -.25rem -.45rem;
+  padding: .25rem .45rem;
+  border-radius: .5rem;
+  font-size: 12.5px;
+  color: var(--text-3);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.ai-trace-toggle[data-live] { color: var(--text-2); }
+.ai-trace-toggle:hover:not(:disabled):not([data-live]) { background: var(--raise-2); color: var(--text-2); }
+.ai-trace-toggle:disabled { cursor: default; }
+.ai-trace-glyph {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: .875rem;
+  height: 1.15rem;
+  font-size: 11px;
+  color: var(--text-4);
+}
+.ai-trace-chevron { font-size: 8px; color: var(--text-4); transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+.ai-trace-list { display: flex; flex-direction: column; gap: .6rem; padding: .7rem 0 .2rem; }
+.ai-trace-step { display: flex; gap: .55rem; min-width: 0; font-size: 12.5px; line-height: 1.15rem; color: var(--text-2); }
+.ai-trace-step[data-running] .ai-trace-glyph { color: var(--brand-500); }
+.ai-trace-detail {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-4);
+}
+/* Telo odpovede je o stupeň tlmenejšie, aby tučné (to podstatné: suma, meno,
+   dátum, záver) vystúpilo plnou farbou textu — v svetlej téme čiernou. */
+.ai-bubble-text { font-size: 13.5px; line-height: 1.45rem; color: var(--text-2); }
+.ai-bubble-text strong { color: var(--text); font-weight: 700; }
+/* Stavba odpovede (BubbleText.tsx): odseky so vzduchom, prvý plnou farbou,
+   zoznam ako plocha o stupeň vyššie s riadkami „meno — hodnota", výhrada ako
+   tichá poznámka na konci. Bez obrysov — riadky delí vlasová čiara. */
+.ai-answer { display: flex; flex-direction: column; gap: .7rem; min-width: 0; overflow-wrap: anywhere; }
+.ai-answer-lead { color: var(--text); font-size: 14px; line-height: 1.5rem; }
+.ai-answer-list { border-radius: .875rem; background: var(--raise-2); overflow: hidden; }
+.ai-answer-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .5rem .875rem;
+  font-size: 13px;
+  line-height: 1.25rem;
+}
+.ai-answer-item.is-stacked { flex-direction: column; align-items: stretch; gap: .1rem; }
+.ai-answer-item + .ai-answer-item { box-shadow: inset 0 1px 0 var(--line); }
+.ai-answer-steps { display: flex; flex-direction: column; gap: .45rem; }
+.ai-answer-steps > li { display: flex; gap: .625rem; }
+.ai-answer-step-no {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: .125rem;
+  border-radius: 999px;
+  background: var(--raise-2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ai-answer-note {
+  display: flex;
+  gap: .5rem;
+  font-size: 12.5px;
+  line-height: 1.25rem;
+  color: var(--text-3);
+}
+/* Bloky AI kolegu v bubline (BubbleBlock.tsx): skupina = jedna plocha
+   o stupeň vyššie než panel, riadky oddelené vlasovou čiarou, bez hlavičky
+   s CSV a zbaľovaním. Pôvodné bloky (plán zásahu, graf) idú do .ai-bubble-legacy. */
+.ai-bubble-group { border-radius: .875rem; background: var(--raise-2); overflow: hidden; }
+.ai-bubble-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .625rem .875rem .375rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.ai-bubble-row {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  width: 100%;
+  padding: .5rem .875rem;
+  text-align: left;
+}
+.ai-bubble-group li + li .ai-bubble-row,
+.ai-bubble-group li.ai-bubble-row + li.ai-bubble-row { box-shadow: inset 0 1px 0 var(--line); }
+.ai-bubble-row.is-link:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
+.ai-bubble-more {
+  width: 100%;
+  padding: .5rem .875rem .625rem;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  box-shadow: inset 0 1px 0 var(--line);
+}
+.ai-bubble-more:hover { color: var(--text); }
+.ai-bubble-group-note { padding: 0 .875rem .625rem; font-size: 11.5px; color: var(--text-3); }
+.ai-bubble-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: .75rem;
+  padding: .375rem .875rem .75rem;
+}
+.ai-bubble-group > .ai-bubble-stats:first-child { padding-top: .75rem; }
+.ai-bubble-callout { display: flex; gap: .625rem; padding: .625rem .875rem; border-radius: .875rem; background: var(--raise-2); }
+.ai-bubble-legacy { min-width: 0; overflow-x: auto; }
+.ai-bubble-legacy .analyst-card { padding: .75rem .875rem; background: var(--raise-2); border-radius: .875rem; }
+.ai-bubble-legacy .analyst-card h3 { font-size: 13px; }
+.ai-bubble-user-mention {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: 12px;
+  opacity: .75;
+}
+.ai-bubble-mentions { display: flex; flex-wrap: wrap; gap: .375rem; margin: 0 .625rem .375rem; }
+.ai-bubble-mention {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  max-width: 100%;
+  min-height: 1.75rem;
+  padding: 0 .625rem;
+  border-radius: 999px;
+  background: var(--raise-2);
+  color: var(--text);
+  font-size: 12.5px;
+}
+.ai-bubble-attach {
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  flex-shrink: 0;
+  margin-left: -.5rem;
+  border-radius: .75rem;
+  color: var(--text-2);
+}
+.ai-bubble-attach:hover, .ai-bubble-attach[aria-expanded="true"] { background: var(--raise-2); color: var(--text); }
+.ai-bubble-picker {
+  margin: 0 .625rem .375rem;
+  padding: .375rem;
+  border-radius: .875rem;
+  background: var(--raise-2);
+}
+.ai-bubble-picker-input {
+  width: 100%;
+  padding: .5rem .625rem;
+  border-radius: .625rem;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.ai-bubble-picker-input::placeholder { color: var(--text-3); }
+.ai-bubble-picker-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  padding: .45rem .625rem;
+  border-radius: .5rem;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+}
+.ai-bubble-picker-row:hover { background: color-mix(in srgb, var(--text) 6%, transparent); }
+.ai-bubble-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: .5rem;
+  margin: 0 .625rem .625rem;
+  padding: .375rem .375rem .375rem .875rem;
+  border-radius: 1rem;
+  background: var(--bg);
+}
+.ai-bubble-input {
+  flex: 1;
+  resize: none;
+  max-height: 7rem;
+  field-sizing: content;
+  padding: .45rem 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+}
+.ai-bubble-input::placeholder { color: var(--text-3); }
+.ai-bubble-send {
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  flex-shrink: 0;
+  border-radius: .75rem;
+  background: var(--brand);
+  color: #fff;
+}
+.ai-bubble-send:disabled { background: var(--raise-2); color: var(--text-3); }
+.ai-bubble-note {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 .625rem;
+  padding: .45rem .75rem;
+  border-radius: .75rem;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 12.5px;
+  text-align: left;
+}
+.ai-bubble-dot {
+  position: absolute;
+  top: .35rem;
+  right: .35rem;
+  width: .5rem;
+  height: .5rem;
+  border-radius: 999px;
+  background: var(--brand);
+}
+/* Podpora a nahlásenie chyby sú komponenty drawera (flex-1 + vlastný scroll). */
+.ai-bubble-embed { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.ai-bubble-card { padding: .75rem; border-radius: .875rem; background: var(--bg); }
+.ai-bubble-card-input {
+  width: 100%;
+  margin-top: .5rem;
+  padding: .5rem .625rem;
+  border-radius: .625rem;
+  background: var(--raise);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+}
+.ai-bubble-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2rem;
+  padding: 0 .875rem;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ai-bubble-primary:disabled { opacity: .5; }
+@media (max-width: 640px) {
+  .ai-bubble { top: auto; bottom: .75rem; right: .75rem; left: .75rem; width: auto; --ai-bubble-h: min(36rem, calc(100dvh - 6rem)); transform-origin: bottom center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-bubble-orb { transition: none; }
+}
+
+/* Animatable angle for the running step's specular rim (.analyst-step-running). */
+@property --spec-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ══ HUDBA V HLAVIČKE (MusicPanel.tsx) ═══════════════════════════════════════
+   Karta „práve hrá" v popoveri hudby a v mobilnom hárku: obal / logo stanice,
+   plocha zafarbená farbou toho obrázka, biele tlačidlo prehrať, tichá dráha —
+   tá istá reč ako widget hudby (.wt-*), len pre plochu, ktorá nie je `--tray`.
+   Plochy sú PRIESVITNÉ (zmes s `--text`), nie ďalší krok rebríčka: karta sedí
+   raz na `--pop` (popover), raz na ploche modálu, a krok rebríčka by na jednej
+   z nich splynul s pozadím. */
+@layer components {
+  .mp-card {
+    --mp-track: color-mix(in srgb, var(--text) 16%, transparent);
+    padding: 14px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    transition: background-color 600ms ease;
+  }
+  .mp-card.mp-tinted { background: color-mix(in oklab, var(--mp-tint) 24%, transparent); }
+  :root.light .mp-card.mp-tinted { background: color-mix(in oklab, var(--mp-tint) 15%, transparent); }
+
+  .mp-cover {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--text) 9%, transparent);
+    color: var(--text-2);
+  }
+  /* Logá staníc bývajú priehľadné a kreslené pre svetlé pozadie. */
+  .mp-cover-logo { background: #ffffff; }
+
+  .mp-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-3);
+  }
+  .mp-title {
+    margin-top: 3px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+  .mp-sub {
+    margin-top: 2px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+
+  .mp-play {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--text);
+    color: var(--bg);
+    font-size: 15px;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+  }
+  .mp-play:hover:not(:disabled) { transform: scale(1.06); }
+  .mp-play:active:not(:disabled) { transform: scale(0.95); }
+  .mp-play:disabled { opacity: 0.35; cursor: default; }
+
+  .mp-icon-btn {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    color: var(--text-2);
+    transition: background-color var(--transition-base), color var(--transition-base);
+  }
+  .mp-icon-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text); }
+  .mp-icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* Tlačidlo s ikonou a textom má VŽDY podklad — inak sa číta ako holý text. */
+  .mp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 13px;
+    border-radius: 999px; /* ovládač, nie štítok */
+    background: var(--text);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .mp-track {
+    position: relative;
+    height: 4px;
+    border-radius: 999px; /* kruh / lišta, nie pilulka */
+    background: var(--mp-track);
+    overflow: hidden;
+  }
+  .mp-track > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: var(--text);
+    transition: width 900ms linear;
+  }
+
+  /* Hlasitosť: `.range-slider` s dráhou v reči karty — atrament, nie akcent.
+     Červená v tomto okne patrí jedine stĺpikom „hrá". */
+  .mp-range::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, var(--text) var(--range-fill, 0%), var(--mp-track) var(--range-fill, 0%));
+  }
+  .mp-range::-webkit-slider-thumb { background: var(--text); }
+  .mp-range::-moz-range-track { background: var(--mp-track); }
+  .mp-range::-moz-range-progress,
+  .mp-range::-moz-range-thumb { background: var(--text); }
+  .mp-range:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 30%, transparent);
+  }
+
+  /* Stĺpiky „hrá" — farbu dáva zdroj (rádio náš akcent, Spotify zelená). */
+  .mp-eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    width: 11px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+  .mp-eq > i {
+    flex: 1;
+    height: 100%;
+    border-radius: 1px;
+    background: currentColor;
+    transform-origin: 50% 100%;
+    animation: mp-eq 820ms ease-in-out infinite alternate;
+  }
+  .mp-eq > i:nth-child(2) { animation-duration: 640ms; animation-delay: -240ms; }
+  .mp-eq > i:nth-child(3) { animation-duration: 940ms; animation-delay: -520ms; }
+  .mp-eq[data-paused] > i { animation: none; transform: scaleY(0.35); }
+}
+@keyframes mp-eq {
+  from { transform: scaleY(0.25); }
+  to   { transform: scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-eq > i { animation: none !important; transform: scaleY(0.6); }
+}
+
+/* Logo stanice v tlačidle hudby v hlavičke (RadioControl.tsx). Pozastavené
+   je sivé, aby tlačidlo hovorilo aj „hrá / nehrá", nielen „čo". */
+@layer components {
+  .mp-btn-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    object-fit: contain;
+    background: #ffffff;
+    transition: filter var(--transition-base), opacity var(--transition-base);
+  }
+  /* V tlačidle v hlavičke logo VYPĹŇA celý štvorec — je to tlačidlo stanice,
+     nie ikona v tlačidle. Rohy dedí od tlačidla, aby sedeli s ostatnými. */
+  .icon-button .mp-btn-logo {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+  }
+  .icon-button:hover .mp-btn-logo:not([data-idle]) { filter: brightness(0.92); }
+  .mp-btn-logo[data-idle] { filter: grayscale(1); opacity: 0.6; }
+  .icon-button:hover .mp-btn-logo[data-idle] { opacity: 0.85; }
+}
+
+/* ── Bočný panel okna so záložkami (skladač úlohy: Zamestnanec / Zákazník) ──
+   Panel je o stupeň ZAPUSTENÝ voči karte okna (`--nest`) a výbery v ňom ležia
+   od hrany po hranu, bez rámu okolo — panel JE výber. Záložky sú tie isté
+   šanónové ako nad kartou Nástenky (ui/pageTabs.css, `.pt-list`/`.pt-tab`),
+   len menšie, a stoja na páse o krok tmavšom než panel: vybratá záložka má
+   farbu panela (`--pt-card`), takže do zoznamu pod sebou plynule prechádza.
+   Premenné sa prepisujú len tu, takže záložky stránky ostávajú, ako sú.
+
+   Pole v paneli potrebuje opačný krok než pole v karte: `--field-sunk` je
+   v tmavej téme presne farba panela (pole by zmizlo) a `--well` je vo svetlej
+   takmer ona — preto jamka v tmavej a biela vo svetlej. */
+.side-panel { background: var(--nest); --side-field: var(--well); --side-strip: var(--bg); }
+:root.light .side-panel { --side-field: var(--raise); --side-strip: var(--raise-2); }
+.side-panel .field { background-color: var(--side-field); }
+.side-tabs-strip { background: var(--side-strip); }
+.side-tabs {
+  --nav-head-h: 44px;
+  --pt-card: var(--nest);
+  --pt-ink: var(--text);
+  --pt-ink-2: var(--text-2);
+  /* Záložky VYPĹŇAJÚ šírku panela — dve rovnaké polovice od hrany po hranu,
+     bez medzier a odsadenia; vybratá polovica plynie do zoznamu pod ňou. */
+  gap: 0;
+  padding-right: 0;
+}
+.side-tabs .pt-tab { flex: 1 1 0; min-width: 0; justify-content: center; font-size: 13px; }
+.side-tabs .pt-face { height: 32px; padding: 0 10px; gap: 6px; }
+/* Vonkajšie rohy sú rovné a vonkajšie oblúčiky sa nekreslia: na hrane panela
+   nie je do čoho sa zaobliť, oblúčik by tam len vyrezal zárez. */
+.side-tabs .pt-tab:first-child { border-top-left-radius: 0; }
+.side-tabs .pt-tab:last-child { border-top-right-radius: 0; }
+.side-tabs .pt-tab:first-child::before,
+.side-tabs .pt-tab:last-child::after { display: none; }

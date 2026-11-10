@@ -1,0 +1,150 @@
+/*
+ * CLOSED DASHBOARDS (components/tabs/DashboardHistory.tsx)
+ *
+ * The clock in the copilot's header, beside "new": the strip is what is open,
+ * this is what was. The panel is the app's floating surface (`.menu-pop` in
+ * styles.css — its own fill and the one shadow the design system allows), so it
+ * reads as a layer over the conversation, not as a part of it.
+ */
+.dh-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dh-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 40;
+  width: 20rem;
+  max-width: calc(100vw - 2rem);
+  padding: 6px;
+  border-radius: var(--r-md);
+  /* It opens inside the copilot panel, so it takes the palette of wherever that
+     panel is — light panel in the light theme, dark in the dark one. */
+  color: var(--text);
+}
+
+.dh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+.dh-clear {
+  border: 0;
+  background: transparent;
+  color: var(--text-4);
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+.dh-clear:hover { color: var(--text-2); }
+
+.dh-empty {
+  padding: 2px 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+.dh-list {
+  max-height: 22rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A row is the dashboard; the cross beside it forgets that one. */
+.dh-list li {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.dh-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 32px 8px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+.dh-row:hover { background: var(--row-hover); }
+
+.dh-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-4);
+}
+
+.dh-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dh-when {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-4);
+}
+
+/* The question it was built from — two lines, then it stops. */
+.dh-question {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.dh-forget {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-4);
+  font-size: 10.5px;
+  cursor: pointer;
+  opacity: 0;
+  transition: background-color var(--transition-base), color var(--transition-base), opacity var(--transition-base);
+}
+.dh-list li:hover .dh-forget,
+.dh-forget:focus-visible { opacity: 1; }
+.dh-forget:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text-2);
+}

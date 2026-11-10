@@ -1,0 +1,319 @@
+/*
+ * THE LEFT SIDEBAR (components/Sidebar.tsx)
+ *
+ * The admin's area panel: a rounded card on the frame, holding the places as
+ * rows. Because it sits inside `.theme-frame` it carries the dark token ladder
+ * in BOTH themes — in light that makes it a near-black panel standing beside
+ * the white content card, which is the whole look.
+ *
+ * Nothing here redefines a surface or a text colour: the rows are the system's
+ * `.nav-item` / `.nav-panel` recipe (styles.css), so the fill of the selected
+ * row is `--pick` of whichever ladder the panel is currently on.
+ */
+
+.app-side {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  /* A column of two cards now — the places, then the Active book under them,
+     with the frame showing between them the way it shows around them. */
+  .app-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    padding: 0 0.5rem 0.5rem;
+  }
+}
+
+/* The panel is a card, like the content card it stands next to — one step up
+   from the frame underneath (`--rail`), so it owns an edge without a border. */
+.app-side-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* 240, not the admin's 212: a deal row carries a company, a value, a date and
+     a probability, and at 212 the type had to shrink below the panel's floor. */
+  width: 240px;
+  padding: 0.5rem;
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+/* The places are two fixed rows; everything left over in the column belongs to
+   the deal list, which is the part that scrolls. */
+.app-side-places {
+  flex: 0 0 auto;
+}
+
+/* The panel's own heading, where the admin puts the area name. A sentence, not
+   spaced capitals: this panel has none of those anywhere. */
+.app-side-head {
+  flex-shrink: 0;
+  padding: 0.375rem 0.75rem 0.625rem;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* The break between the places and the book. The two cards already stand apart
+   on the frame, but at this contrast a gap alone reads as one tall panel with a
+   seam — the rule says the sidebar has two parts and means it. */
+.app-side-rule {
+  flex-shrink: 0;
+  height: var(--hairline);
+  margin: 0.125rem 0.75rem;
+  background: var(--line);
+}
+
+/*
+ * THE DEALS PANEL (components/DealsPanel.tsx)
+ *
+ * A second card under the places, on the same frame ladder, holding the Active
+ * book as rows. It is the only list in the sidebar that scrolls: the places are
+ * two fixed rows above it, so the panel takes the rest of the column and keeps
+ * its own head, totals and sort switch still while the rows move under them.
+ *
+ * The rows are `.nav-item`'s shape with two lines instead of one — same radius,
+ * same hover and selected fills (`--raise`, `--pick`) — rather than a new
+ * surface, so a deal reads as a sibling of the places and not as a widget.
+ */
+
+.deals-panel {
+  flex: 1 1 auto;
+  gap: 0;
+  overflow: hidden; /* the rows scroll, the card does not */
+}
+
+.deals-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem 0.3125rem 0.75rem;
+}
+
+.deals-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap; /* the head is one line; the switch beside it shrinks first */
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* The whole book in one line: count, value, weighted value. Muted, because it
+   is context for the rows and not a metric card. */
+.deals-summary {
+  flex-shrink: 0;
+  padding: 0 0.75rem 0.5rem;
+  color: var(--text-4);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+
+/* Two lines on purpose — see the component: the count and the open money, then
+   the weighted figure and whatever is past its date. */
+.deals-summary-line {
+  display: block;
+}
+
+.deals-overdue-count {
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* The order switch, in the panel head beside the reload. A text button and not
+   a pill track: the segmented control is 48px tall by design-system decree,
+   which in a 240px column would cost more height than the rows it reorders. */
+.deals-order {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.3125rem;
+  height: 22px;
+  padding: 0 0.5625rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--raise);
+  color: var(--text-3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.deals-order:hover {
+  background: var(--raise-2);
+  color: var(--text);
+}
+
+.deals-order:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+}
+
+/* Search — the design system's own field, taken down to the panel's scale.
+   The magnifier and the clear button are drawn over it rather than beside it,
+   so the input keeps the full width of a 240px column. */
+.deals-search {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0 0.125rem 0.5rem;
+}
+
+.deals-search-field {
+  height: 34px;
+  padding-inline: 1.875rem 1.75rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* The native clear cross would be a second, differently drawn one. */
+.deals-search-field::-webkit-search-cancel-button { display: none; }
+
+.deals-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  margin-top: -0.25rem;
+  color: var(--text-4);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.deals-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: -0.25rem;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.deals-search-clear:hover { background: var(--raise-2); color: var(--text); }
+
+.deals-search-clear:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+}
+
+.deals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 0.375rem;
+  padding-bottom: 0.25rem;
+  border-top: var(--hairline) solid var(--line);
+}
+
+.deal-row {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 2px;
+  width: 100%;
+  padding: 0.4375rem 0.75rem 0.5rem;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.deal-row:hover:not(:disabled) {
+  background: var(--raise);
+}
+
+/* The deal the copilot was last asked about — the same neutral "selected"
+   surface the places use, so one highlight means one thing in this panel. */
+.deal-row.active,
+.deal-row.active:hover {
+  background: var(--pick);
+}
+
+/* A question is in flight: the list cannot start a second one, and says so by
+   fading rather than by moving. */
+.deal-row:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.deal-row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+}
+
+.deal-row-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.deal-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.deal-value {
+  flex-shrink: 0;
+  color: var(--text-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.deal-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  color: var(--text-4);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+.deal-row-meta > span { flex-shrink: 0; }
+.deal-row-meta > .truncate { min-width: 0; flex-shrink: 1; }
+.deal-dot { opacity: 0.6; }
+
+/* Past the reference date and still Active — the one state in this list that
+   is an instruction, so it is the only one that takes a colour. */
+.deal-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* Loading, failure, emptiness and the "40 of 100" footer — one quiet note. */
+.deals-note {
+  padding: 0.5rem 0.75rem;
+  color: var(--text-4);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}

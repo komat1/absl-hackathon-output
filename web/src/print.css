@@ -1,0 +1,137 @@
+/*
+ * PRINT — the dashboard on paper (lib/print.ts)
+ *
+ * The live canvas IS the printout: these rules take the frame off it. Loaded
+ * after styles.css, which carries the admin panel's own print recipe — there a
+ * print-only report is portaled beside #root and the app is hidden, so the
+ * first rule below puts the app back for this one.
+ *
+ * Landscape, because a dashboard is wide: the canvas is capped at 1100 px and a
+ * chart is an SVG at the width it had on screen, so a portrait sheet would cut
+ * the right-hand side off.
+ */
+
+.print-head {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  /* styles.css: `body > #root { display: none }`. Here the app is the report. */
+  html body > #root {
+    display: block !important;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  /* The shell is a full-height grid with its own scrollers; on paper it is one
+     column of content that may run over several sheets. */
+  #root > div {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  /* The frame: topbar, the dashboards panel on the left, the copilot column.
+     `aside` covers the panel whatever class the layout currently gives it. */
+  .app-topbar,
+  .app-side,
+  .ai-dock,
+  .dt-strip,
+  .dt-wrap,
+  #root aside {
+    display: none !important;
+  }
+
+  .app-main-col {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .app-main-card {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    /* Tones carry meaning here — a good/bad metric that prints grey is a lie. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Who, what, when and the disclaimer — a sheet has to say what it is. */
+  .print-head {
+    display: block !important;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #17171c;
+    color: #17171c;
+  }
+  .print-head__title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .print-head__question {
+    margin-top: 2px;
+    font-size: 10.5px;
+    font-style: italic;
+    color: #52525b;
+  }
+  .print-head__meta {
+    margin-top: 3px;
+    font-size: 9px;
+    color: #71717a;
+  }
+
+  /* Keep a block, a metric card or a row whole where it fits on the sheet. */
+  .animate-block-in,
+  .metric-card {
+    break-inside: avoid;
+    animation: none !important;
+  }
+  tr {
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group; /* the header repeats on every sheet */
+  }
+
+  /* A table that scrolls sideways on screen shows every column on paper. */
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  /* A chart is an SVG sized to the screen; hold it inside the sheet. Only the
+     container is capped: Recharts 3 puts the wrapper inside a 0×0 sizer div,
+     so `max-width: 100%` on the wrapper or its svg resolves to 0 px and the
+     chart prints blank. */
+  .recharts-responsive-container {
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+
+  /* Nothing you can click belongs on a sheet of paper. */
+  .icon-button,
+  .primary-button,
+  .ghost-button,
+  [data-print-hide] {
+    display: none !important;
+  }
+}

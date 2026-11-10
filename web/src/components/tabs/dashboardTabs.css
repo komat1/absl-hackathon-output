@@ -1,0 +1,252 @@
+/*
+ * DASHBOARD TABS ABOVE THE CONTENT CARD (components/tabs/DashboardTabs.tsx)
+ *
+ * The admin's page-tab recipe (ui/pageTabs.css there), one level up: here a tab
+ * is a whole dashboard with its own conversation, not a section of one page.
+ *
+ * The row lies ON the frame (`.theme-frame`, its own dark tokens) and the
+ * SELECTED tab is not part of it — it is a piece of the content card sticking
+ * upward, so it takes the card's fill and ink from the root (`--dt-card`,
+ * `--dt-ink` are computed on `:root` and the frame subtree must not recompute
+ * them). The same move as the picked area in the rail on the left, upside down.
+ *
+ * No outline, no shadow. Unselected tabs are text on the frame and get only a
+ * quiet face fill on hover — never the card shape, or two tabs would claim the
+ * selection at once. A hairline divider sits in the gap between two unselected
+ * neighbours, Chrome-style, and disappears at the selected one, where the shape
+ * already draws the boundary.
+ */
+
+:root {
+  /* One number for the row, the strip's buttons and the gap above the card. */
+  --dt-row-h: 46px;
+  --dt-face-h: 32px;
+  --dt-card: var(--bg);
+  --dt-ink: var(--text);
+  --dt-ink-2: var(--text-2);
+}
+
+.dt-strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: var(--dt-row-h);
+  min-width: 0;
+  padding-right: 8px;
+}
+
+/* The tabs themselves scroll sideways when they stop fitting; the + button
+   outside the scroller stays reachable. The scroller clips what sticks out of
+   its edge, so it keeps 8 px for the first tab's foot and is pulled back by
+   the same 8 px — the first tab still sits on the card's edge. */
+.dt-list {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: var(--dt-row-h);
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  padding-left: 8px;
+  margin-left: -8px;
+}
+.dt-list::-webkit-scrollbar { display: none; }
+
+/* 14 px top corners like the content card, 8 px feet like the picked area in
+   the rail. The tab is the full height of the row so its bottom edge meets the
+   card; the face is centred inside it. */
+.dt-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--dt-row-h);
+  padding: 0 8px;
+  border: 0;
+  border-radius: 14px 14px 0 0;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.dt-face {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--dt-face-h);
+  max-width: 15rem;
+  padding: 0 10px;
+  border-radius: 10px;
+  transition: background-color var(--transition-base);
+}
+
+.dt-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Renaming in place: the field takes the tab's own type, so the name does not
+   jump when it turns into an input. */
+.dt-rename {
+  min-width: 4rem;
+  max-width: 12rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+/* A pinned dashboard that is not open yet: in the strip, quieter than the ones
+   carrying a conversation. */
+.dt-tab:not([data-open]) .dt-label { opacity: .72; }
+
+.dt-tab[data-state="inactive"]:hover { color: var(--text); }
+.dt-tab[data-state="inactive"]:hover .dt-face {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+/* The divider between two unselected tabs, in the middle of the gap. The
+   selected tab uses ::before/::after for its feet, so the divider is always
+   carried by the RIGHT one of the pair — and only when both are unselected, so
+   it disappears by itself next to the selection. */
+.dt-tab[data-state="inactive"] + .dt-tab[data-state="inactive"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -2.5px;
+  width: 1px;
+  height: 18px;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+.dt-tab[data-state="inactive"]:hover::before,
+.dt-tab[data-state="inactive"]:hover + .dt-tab[data-state="inactive"]::before { opacity: 0; }
+
+.dt-tab[data-state="active"] {
+  z-index: 1;
+  background: var(--dt-card);
+  color: var(--dt-ink);
+  cursor: default;
+}
+
+.dt-tab[data-state="active"]::before,
+.dt-tab[data-state="active"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+.dt-tab[data-state="active"]::before {
+  left: -8px;
+  background: radial-gradient(circle at 0 0, transparent 7.5px, var(--dt-card) 8px);
+}
+.dt-tab[data-state="active"]::after {
+  right: -8px;
+  background: radial-gradient(circle at 100% 0, transparent 7.5px, var(--dt-card) 8px);
+}
+
+/* The first tab sits on the card's left edge: selected, it drops its left foot
+   and the card below drops that corner — the tab runs into it with a straight
+   edge, like a tabbed folder. */
+.dt-list[data-first-active] .dt-tab[data-state="active"]::before { display: none; }
+.app-main-col:has(.dt-list[data-first-active]) .app-main-card { border-top-left-radius: 0; }
+
+/* The boundary between the two groups: favourites, then what is merely open. */
+.dt-split {
+  flex-shrink: 0;
+  align-self: flex-end;
+  width: 1px;
+  height: 18px;
+  margin: 0 5px calc((var(--dt-row-h) - var(--dt-face-h)) / 2 + 7px);
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+/* Star and close, on the tab's own face. Shown on the selected tab and on
+   hover; a star that is on stays visible, since it is also the marker. */
+.dt-act {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: -4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-4);
+  font-size: 10.5px;
+  cursor: pointer;
+  opacity: 0;
+  transition: background-color var(--transition-base), color var(--transition-base), opacity var(--transition-base);
+}
+.dt-tab[data-state="active"] .dt-act,
+.dt-tab:hover .dt-act,
+.dt-act[data-on],
+.dt-act:focus-visible { opacity: 1; }
+.dt-act:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text-2);
+}
+.dt-act[data-on] { color: var(--amber); }
+.dt-tab[data-state="active"] .dt-act { color: var(--dt-ink-2); }
+.dt-tab[data-state="active"] .dt-act[data-on] { color: var(--amber); }
+
+/* The dashboard is building: the dot pulses next to its name. */
+.dt-busy {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--brand-400);
+  animation: dt-pulse 1.2s ease-in-out infinite;
+}
+@keyframes dt-pulse {
+  0%, 100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dt-busy { animation: none; opacity: 1; }
+}
+
+/* + at the end of the row. `.icon-button` draws the admin's 42 px raised
+   square, which here is taller than the row (it stuck out over the frame) and
+   reads as a filled control next to tabs that are only text. So it is redrawn
+   as one more tab face: the same 32 px box, the same 10 px corners, the same
+   quiet hover fill, sitting exactly on the face line of the tabs. */
+.dt-new {
+  flex-shrink: 0;
+  width: var(--dt-face-h);
+  height: var(--dt-face-h);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  margin-bottom: calc((var(--dt-row-h) - var(--dt-face-h)) / 2);
+}
+.dt-new:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text);
+}
+.dt-new:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+}
+
+/* The ring goes on the face, not the tab: around the selected one it would cut
+   through where the tab meets the card. Same value as everywhere else. */
+.dt-tab:focus-visible { outline: none; }
+.dt-tab:focus-visible .dt-face {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 30%, transparent);
+}

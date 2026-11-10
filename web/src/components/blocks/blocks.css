@@ -1,0 +1,187 @@
+/*
+ * AI KOLEGA — bloky odpovede a zoznam analýz (components/analyst/).
+ * DESIGN-SECTIONS.md §4.10 (nadpis nad kartou), §4.11 (zoznam vedľa rozhovoru).
+ *
+ * Mimo vrstiev zámerne, ako sectionKit.css: pravidlá o písme na <button> musia
+ * prebiť `button { font: inherit }`, ktoré stojí v styles.css tiež mimo vrstiev.
+ */
+
+/* ── Blok odpovede: nadpis nad kartou ─────────────────────────────────────── */
+.analyst-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 6px;
+  min-height: 32px;
+  padding: 0 2px;
+}
+.analyst-block-title {
+  display: flex;
+  min-width: min(100%, 14rem);
+  flex: 1 1 auto;
+  align-items: baseline;
+  column-gap: 8px;
+  flex-wrap: wrap;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: var(--text);
+}
+.analyst-block-icon {
+  width: 16px;
+  flex-shrink: 0;
+  align-self: center;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+/* Počet je fakt — stojí na každej šírke, len tichšie. */
+.analyst-block-meta {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.analyst-block-card {
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--raise);
+}
+.analyst-block-pad { padding: 20px; }
+@media (max-width: 639px) {
+  .analyst-block-pad { padding: 16px; }
+}
+.analyst-block-note {
+  margin-top: 8px;
+  padding: 0 4px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* Spodný pás karty — čo sa stane vľavo, jedna akcia vpravo (DESIGN-POPUPS §4.7). */
+.analyst-block-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 14px 20px;
+  box-shadow: inset 0 var(--hairline, 1px) 0 var(--line);
+}
+
+/* Stav bloku jedným slovom s ikonou — farbu dáva štýl na prvku. */
+.analyst-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Nástroj v nadpise bloku (CSV, filter) — malé tlačidlo s plochou. */
+.analyst-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-xs);
+  background: var(--raise);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.analyst-tool:hover,
+.analyst-tool[data-active] { background: var(--raise-2); color: var(--text); }
+
+/* Zbalenie bloku — ikonové tlačidlo, ktoré každý pozná. */
+.analyst-fold {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-xs);
+  color: var(--text-3);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.analyst-fold:hover { background: var(--raise); color: var(--text); }
+
+/* Textový odkaz v riadku („Na čom to stojí", „Otvoriť nastavenie"). */
+.analyst-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+  transition: color var(--transition-base);
+}
+.analyst-link:hover { color: var(--text); }
+
+/* Riadky karty oddelené vláskom s odsadením riadku (20 px) — ten istý tvar
+   ako CardList v sekciách. */
+.analyst-rows > li { position: relative; }
+.analyst-rows > li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: var(--hairline, 1px);
+  background: var(--line);
+}
+.analyst-rows > li[data-clickable] { cursor: pointer; transition: background-color var(--transition-base); }
+.analyst-rows > li[data-clickable]:hover { background: var(--nest-hover); }
+.analyst-rows > li[data-clickable]:focus-visible { outline: none; background: var(--nest-hover); }
+
+/* Člen v kroku plánu — zapustený štítok, klik otvorí kartu. */
+.analyst-person-chip {
+  border-radius: var(--r-xs);
+  background: var(--nest);
+  padding: 4px 10px;
+  color: var(--text-2);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.analyst-person-chip:hover { background: var(--nest-hover); color: var(--text); }
+
+/* V bubline AI (aibubble/BubbleBlock.tsx, `.ai-bubble-legacy`) je blok menší:
+   kratšie nadpisy a karta o stupeň vyššie, lebo bublina sama je `--raise`. */
+.ai-bubble-legacy .analyst-block-title { font-size: 13px; }
+.ai-bubble-legacy .analyst-block-meta { font-size: 12px; }
+.ai-bubble-legacy .analyst-block-card { margin-top: 6px; border-radius: .875rem; background: var(--raise-2); }
+.ai-bubble-legacy .analyst-block-pad { padding: .75rem .875rem; }
+.ai-bubble-legacy .analyst-block-bar { padding: .625rem .875rem; }
+.ai-bubble-legacy .analyst-rows > li { padding-left: .875rem; padding-right: .875rem; }
+.ai-bubble-legacy .analyst-rows > li + li::before { left: .875rem; right: .875rem; }
+.ai-bubble-legacy .analyst-tool { height: 26px; padding: 0 8px; background: var(--raise-2); }
+
+/* ── Zoznam analýz ────────────────────────────────────────────────────────── */
+/* Otvorená analýza je `--pick` (tá istá plocha ako otvorené vlákno v Chate);
+   hover len na neotvorenom riadku. */
+.analyst-history-row > button { color: inherit; }
+.analyst-history-row[data-picked="true"] > button { background: var(--pick); }
+.analyst-history-row[data-picked="false"] > button:hover { background: var(--well); }
+/* „⋯" na myši až pri prechode ponad riadok; na dotyku (bez hoveru) vždy. */
+.analyst-history-more { opacity: 0; transition: opacity var(--transition-base); }
+.analyst-history-row:hover .analyst-history-more,
+.analyst-history-row:focus-within .analyst-history-more,
+.analyst-history-row[data-picked="true"] .analyst-history-more,
+.analyst-history-more:has(details[open]) { opacity: 1; }
+@media (hover: none) {
+  .analyst-history-more { opacity: 1; }
+}
+
+/* ── Zásahy (okno) ────────────────────────────────────────────────────────── */
+.analyst-run-list > .analyst-run-row { position: relative; }
+.analyst-run-list > .analyst-run-row + .analyst-run-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: var(--hairline, 1px);
+  background: var(--line);
+}
